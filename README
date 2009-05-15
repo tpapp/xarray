@@ -1,0 +1,67 @@
+This package implements a generalized interface for array-like
+objects.  The idea is that we should be able to index an object as
+
+(xref object 1 2 3)
+
+to retrieve or set an element.  This would be easy to do it aref was a
+generic function, but it is not.  I describe a simple interface with a
+few generic functions (xdims queries dimensions, xtype element type,
+etc), any objects that has these methods is called "xrefable".
+
+The nice part is that views on an array can also be xrefable.  For an
+two-dimensional array *a*, 
+
+(slice *a* :all 4)
+
+selects the 4th column of an array.[1] This view is also xrefable, so
+you can use
+
+(setf (xref (slice *a* :all 4) 2) 9)
+
+to set element 2 to 9.  Changes will be made in the original array
+*a*, since this is a view.  But for functions that just expect an
+array, they can use the interface (xref, xdims, etc) and not care
+where it is coming from.
+
+[1] The slice interface is similar to my affi package, but now
+arbitrary index vectors are allowed, much like R.
+
+I have also implemented permutations (generalized transpose), and
+row-major projections.  If you want to collect the elements of a view
+in an array, use (take object), which delivers a CL array.
+
+There are convenience functions that for easy array/vector creation,
+inspired by R:
+
+(carray* '(2 3) 1 2 3 4d0 5 6)
+  ;; => #2A((1.0d0 2.0d0 3.0d0) (4.0d0 5.0d0 6.0d0))
+
+guess the type so that all of the elements would fit in.  See also
+cvector and carray (manually specified type) and cvector*.
+
+
+Roadmap:
+
+1. unit testing.  supremely important.
+
+2. integrate linear algebra routines, probably from GSLL.  It should
+be easy to rig an xrefable interface to GSLL arrays.
+
+3. upper- and lower-triangular matrices, etc.  xrefable elements can
+be read-only, xref-writeable-p is an interface to test if an element
+is writeable, it was included specifically for this.
+
+4. decent printing for xrefable objects, I currently convert them to array.
+
+5. integrate sparse matrices from cl-sparsematrix.
+
+6. specialized subclasses for certain cases.  eg views on matrices, a
+transpose-view would be much simpler (and faster, maybe?) than the
+generalized permute.
+
+7. certain views can be directly accommodated by LAPACK/GSLL (eg a
+matrix with a stride).  Minor possibility for speedup/memory savings.
+
+
+Tamas K Papp
+tkpapp@gmail.com
