@@ -78,6 +78,9 @@
 ;;;; !!! permutation.  Could make it much faster.  Do it when needed.
 
 
+;;; AJR:  We have a possible evil conflict -- Lisp-Matrix Slices are
+;;; something else, not corresponding to this matlab/R/python-ish
+;;; meaning of slicing.
 
 ;;;; slices
 ;;;;
@@ -85,6 +88,9 @@
 ;;;; a slice contains only a single index in a dimension, that
 ;;;; dimension can be dropped from the slice.  For valid index
 ;;;; specifications, see parse-index-specifications.
+
+;;; AJR: point -- marginalization of a table into a subtable
+;;; (guarantee rectangle-ness -- no ragged results).
 
 (defgeneric slice (object &rest index-specifications)
   (:documentation "Slice of an object."))

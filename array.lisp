@@ -19,6 +19,7 @@
   (array-total-size object))
 
 (defmethod xref-writable-p ((object array) &rest subscripts)
+  "Arrays always can be written to -- until we read-only it?!"
   (declare (ignore subscripts))
   t)
 

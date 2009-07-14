@@ -1,0 +1,12 @@
+Suggestions for Tamas:
+
+* Change 'xtype' method to allow for an optional array index?
+
+  i.e. (* * *) or (1 * *) which would allow for extraction of a
+  restricted-type subarray (for example if the basic structure is a
+  subarray.
+
+  This could probably be implemented via xtype on a view of a subset,
+  rather than a second interface generic.  Since we might have an
+  xrefable object which is not array like but has an array-like
+  indexing mechanism.

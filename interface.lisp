@@ -21,6 +21,9 @@
   (:documentation "Return the type of elements.  If no restriction is
   imposed, return t."))
 
+
+;;; Q: for Tamas: should we worry about confusing array-rank with
+;;; numerical rank of matrices?  Or am I(AJR) just confused?
 (defgeneric xrank (object)
   (:documentation "Returns the number of dimensions of object."))
 
@@ -31,9 +34,12 @@
 
 (defgeneric xdims* (object)
   (:method (object)
+    "Default method: Leverages existing methods but might be
+     inefficient."
     (coerce (xdims object) 'int-vector))
   (:documentation "Return an int-vector of dimensions of object.  May
-  not be freshly created, so you should not modify it."))
+  not be freshly created if a specialized method is used, so you
+  should not modify it (default uses XDIMS)."))
 
 (defgeneric xdim (object axis-number)
   (:method (object axis-number)
@@ -48,13 +54,17 @@
 (defgeneric xref-writable-p (object &rest subscripts)
   (:method (object &rest subscripts) (declare (ignore subscripts)) t)
   (:documentation "Return non-nil if and only if the element in object
-addressed by subscripts is writable."))
+  addressed by subscripts is writable.   Default assumption is that
+  objects are writable, and methods needed otherwise (for example,
+  views might be locked to be read-only, set by flags.")) 
 
 (defgeneric xref (object &rest subscripts)
-  (:documentation "Accesses the element of the object specified by subscripts."))
+  (:documentation "Accesses the element of the object specified by
+  subscripts."))
 
 (defgeneric (setf xref) (value object &rest subscripts)
-  (:documentation "Accesses the element of the object specified by subscripts."))
+  (:documentation "Accesses the element of the object specified by
+  subscripts.  Methods should check x"))
 
 ;;;; !! at the experimental stage I am not using these conditions.
 ;;;; !! should the be mandatory later on? work out specs
@@ -79,6 +89,8 @@ addressed by subscripts is writable."))
 ;;;;  special, because they are the built-in CL type.  The function
 ;;;;  take copies the elements of an xrefable object to an array.
 
+;; AJR: critical to ensure object is xref-able?  No, since an error
+;; will get thrown at the xdims point.
 (defgeneric take (object &key map-function type)
   (:method (object &key map-function (type (xtype object)))
     ;; fallback case
@@ -110,7 +122,7 @@ addressed by subscripts is writable."))
   (:method (destination source &key map-function)
     (unless (equalp (xdims source) (xdims destination))
       (error "source and destination do not have conforming dimensions"))
-    (let ((dimensions (coerce (xdims source) 'int-vector))
+    (let ((dimensions (coerce (xdims source) 'int-vector)) ; isn't this just xdims* ?
 	  (map-function (map-and-convert-function map-function
 						  (xtype source)
 						  (xtype destination) t)))
@@ -126,5 +138,3 @@ addressed by subscripts is writable."))
     destination)
   (:documentation "Copy the elements of source to destination, with
   the usual semantics for map-function and type conversion"))
-	  
-  
