@@ -1,3 +1,4 @@
+;; (asdf:oos 'asdf:load-op 'xarray)
 (in-package :xarray)
 
 (defparameter *a* (make-array '(4 5)))
@@ -14,8 +15,11 @@
 
 *b*
 
-#<PERMUTATION-VIEW 
-#2A((0 5 10 15) (1 6 11 16) (2 7 12 17) (3 8 13 18) (4 9 14 19))  {C0A9509}>
+#|
+ =>
+ #<PERMUTATION-VIEW 
+ #2A((0 5 10 15) (1 6 11 16) (2 7 12 17) (3 8 13 18) (4 9 14 19))  {C0A9509}>
+|#
 
 (defparameter *s* (slice *b* '(2 3) '(-2 -1)))
 
