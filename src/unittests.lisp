@@ -24,9 +24,13 @@
    (xref1 (ensure (equal 1 (xref array-ex1 0 0))))
    (slice1 (ensure (equal array-ex2 (slice array-ex1 '(1 *)))))))
 
-(defparameter *array-ex1* #2A((1 2) (3 4)))
-(aref *array-ex1* 1 1)
-(equal 1  (xref *array-ex1* 0 0 ))
+#|
+ (defparameter *array-ex1* #2A((1 2) (3 4)))
+ (defparameter *array-ex2* #(1 2))
+ (aref *array-ex1* 1 1)
+ (equal 1  (xref *array-ex1* 0 0 ))
+ (slice *array-ex1* 0 0)
+|#
 
 ;; (describe (run-tests :suite 'lisp-stat-ut-testsupport2))
 
