@@ -6,7 +6,7 @@
 
 (defpackage :xarray-ut
   (:use :common-lisp :lift :xarray)
-  (:export run-xarray-tests))
+  (:export run-xarray-tests xarray-ut))
 
 (in-package :xarray-ut)
 

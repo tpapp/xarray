@@ -13,3 +13,7 @@
 
 	   ;; export conditions as well?
 	   ))
+
+
+(defpackage #:xarray-user
+  (:use :common-lisp :xarray))
