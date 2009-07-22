@@ -43,7 +43,7 @@ using dimensions (also a vector).  Checks for boundaries and rank."
   "Return i decomposed to a list of subscripts, taking
   dimensions (which is a vector) as a row-major indexing scheme.  No
   error checking is performed, meant for internal use."
-;  (check-type dimensions (array * (*)))
+  ;; (check-type dimensions (array * (*)))
   ;; !!! speed it up if necessary, type declarations
   (do ((dimension-index (1- (length dimensions)) (1- dimension-index))
        (subscripts nil))
