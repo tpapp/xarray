@@ -1,0 +1,18 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Unittests integrated or separate?
+desc: do we put unittests integrated or separated for ASDF loader?
+type: :task
+component: xarray.git
+release: 
+reporter: tony <blindglobe@gmail.com>
+status: :unstarted
+disposition: 
+creation_time: 2009-07-23 06:36:29.087349 Z
+references: []
+
+id: ea5eb2e53f149c4d2c0fc6fab4e06ae62a3cc5a8
+log_events: 
+- - 2009-07-23 06:36:30.443467 Z
+  - tony <blindglobe@gmail.com>
+  - created
+  - ""
