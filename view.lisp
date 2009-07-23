@@ -103,8 +103,9 @@
   ((index-specifications :initarg :index-specifications
 			 :reader index-specifications
 			 :type vector
-			 :documentation "vector of index speficiations")
-   (dimensions :initarg :dimensions :reader dimensions
+			 :documentation "vector of index specifications")
+   (dimensions :initarg :dimensions
+	       :reader dimensions
 	       :type int-vector
 	       :documentation "dimensions, cached")))
 
