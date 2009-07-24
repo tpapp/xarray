@@ -9,8 +9,8 @@
 
 (in-package :xarray-ut)
 (run-tests :suite 'xarray-ut)
+;; => #<Results for XARRAY-UT 7 Tests, 3 Errors>
 (describe (run-tests :suite 'xarray-ut))
-
 
 ;;; Development
 
