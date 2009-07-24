@@ -180,18 +180,18 @@ no error checking.  Return nil for dropped dimensions."
 
 (defmethod slice (object &rest index-specifications)
   ;; Implementation note: we cache dimensions.
-  (let* ((index-specifications (map 'vector
-				    #'parse-index-specification
-				    index-specifications
-				    (xdims object)))
+  (let* ((parsed-index-specifications (map 'vector
+					   #'parse-index-specification
+					   index-specifications
+					   (xdims object)))
 	 (dimensions (iter
-		       (for is :in-vector index-specifications)
+		       (for is :in-vector parsed-index-specifications)
 		       (for d := (index-specification-dimension is))
 		       (when d
 			 (collecting d)))))
-    (assert (= (length index-specifications) (xrank object)))
+    (assert (= (length parsed-index-specifications) (xrank object)))
     (make-instance 'slice-view :ancestor object
-		   :index-specifications index-specifications
+		   :index-specifications parsed-index-specifications
 		   :dimensions (coerce dimensions 'int-vector))))
 
 (defmethod xrank ((object slice-view))
