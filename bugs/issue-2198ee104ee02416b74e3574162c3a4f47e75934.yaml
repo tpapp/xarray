@@ -1,0 +1,21 @@
+--- !ditz.rubyforge.org,2008-03-06/issue 
+title: Implement an equalp for xref-able objects
+desc: |-
+  We need to implement an equality function for xref-able objects.  Currently, one can TAKE an xrefable object
+  or two and compare the taken structures as equalp arrays, but it would be great to do this via xref access
+  using xrank/xdims to compare structure equality, and xref to compare element equality (if so).
+type: :feature
+component: xarray.git
+release: 
+reporter: tony <blindglobe@gmail.com>
+status: :unstarted
+disposition: 
+creation_time: 2009-07-27 06:59:16.320464 Z
+references: []
+
+id: 2198ee104ee02416b74e3574162c3a4f47e75934
+log_events: 
+- - 2009-07-27 06:59:27.100375 Z
+  - tony <blindglobe@gmail.com>
+  - created
+  - need to discuss with Tamas.
