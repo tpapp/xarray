@@ -26,8 +26,8 @@
 (equalp (take *s*)
 	#2A((12 17) (13 18)))
 
-
+;; and here we pass through to set the value.
 (xsetf *s*
        (make-array '(2 2) :initial-element 0))
-
-*a* ; => #2A((0 1 2 3 4) (5 6 7 8 9) (10 11 0 0 14) (15 16 0 0 19))
+(equalp *a*
+	#2A((0 1 2 3 4) (5 6 7 8 9) (10 11 0 0 14) (15 16 0 0 19)))
