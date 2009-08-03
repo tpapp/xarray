@@ -2,6 +2,7 @@
 ;;; Copyright (c) 2009--, by A.J. Rossini <blindglobe@gmail.com>
 ;;; See COPYRIGHT file for any additional restrictions (LLGPL).
 
+;;; (asdf:oos 'asdf:load-op 'xarray-test)
 (in-package :cl-user)
 
 (defpackage :xarray-ut
@@ -16,8 +17,9 @@
 ;; (run-xarray-tests)
 
 (deftestsuite xarray-ut ()
-  ((array-ex1 #2A((1 2) (3 4)))
-   (array-ex2 #(1 2))))
+  ((array-ex0 #2A((11 12 13 14) (21 22 23 24) (31 32 33 34)))
+   (array-ex1 #2A((21 22 23 24)))
+   (array-ex2 #2A((12)(22)(32)))))
 
 (deftestsuite xarray-ut-xref (xarray-ut) ())
 (deftestsuite xarray-ut-xrank (xarray-ut) ())
@@ -47,17 +49,60 @@
 
 ;; slice on arrays
 
+#|
+
+ (let
+
+  ;(princ (slice array-ex0 '(0 1 2) '(0 1 2 3)))
+  (princ (slice array-ex0 '(1) '(1 0)))
+  (princ (slice array-ex0 '(1) :all))
+  (princ (slice array-ex0 '(1) :rev))
+  nil)
+
+ (let
+  ((array-ex0 #2A((11 12 13 14) (21 22 23 24) (31 32 33 34)))
+   (array-ex1 #2A((21 22 23 24)))
+   (array-ex2 #2A((12)(22)(32))))
+
+  (macrolet
+      ((ps1 (&rest indices) `(format t "~A~%" (slice array-ex0 ,@indices))))
+    ;(ps1 1 1) ;=> 22 ERROR, to debug!
+    (ps1 (list 1) (list 1))
+    (ps1 '(1) '(1 1))
+    (ps1 (list 0 2) (list 1 3))
+    (ps1 '(1) '(1 1))
+    (ps1 '(1) '(1 0))
+    (ps1 '(1) '(0))
+    (ps1 :all '(2))
+    (ps1 :rev '(2))
+    (ps1 '(1) :all)
+    (ps1 '(1) :rev)
+    (ps1 '(1 0) '(1 0))
+    (ps1 '(0 1) '(0 1)))
+   nil)
+
+|#
+
+
 (addtest (xarray-ut-slice) slice-0
-	 (ensure (slice array-ex1 1)))
+	 (ensure (slice array-ex1 1 '-1)))
 
 (addtest (xarray-ut-slice) slice-1
-	 (ensure (equal array-ex2 (slice array-ex1 1))))
+	 (ensure (equal array-ex2 (slice array-ex1 '(1) '(0)))))
+
+(addtest (xarray-ut-slice) slice-1a
+	 (ensure (equal array-ex2 (slice array-ex1 '(1) '()))))
 
 (addtest (xarray-ut-slice) slice-2
-	 (ensure (equal array-ex2 (slice array-ex1 #(1 0)))))
+	 (ensure (equal array-ex2 (slice array-ex1 '(1 0) '(1 0)))))
 
 #|
+ (run-tests :suite 'xarray-ut)
+ ; => #<Results for XARRAY-UT 8 Tests, 2 Failures, 1 Error>
+
  (describe (run-tests :suite 'xarray-ut))
+
+ (describe (run-tests :suite 'xarray-ut-slice))
 
  (describe 
     (run-test
