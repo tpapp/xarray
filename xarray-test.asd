@@ -10,9 +10,7 @@
   :serial t
   :depends-on (:xarray
 	       :lift)
-  :components (;; (:file "unittests")
-
-	       (:module
+  :components ((:module
 		"ut-core"
 		:pathname "src/"
 		:components ((:file "unittests")))))
