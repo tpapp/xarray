@@ -7,8 +7,11 @@
 ;;;; in the CL spirit.
 
 (defclass view ()
-  ((ancestor :initarg :ancestor :reader ancestor 
-	     :documentation "an underlying object that is accessible with xref")))
+  ((ancestor :initarg :ancestor
+	     :reader ancestor 
+	     :documentation "an underlying object that is accessible
+  with xref, and which is content-wise same (or subset), structurally different
+  than its ancestor.")))
 
 (defmethod xtype ((object view))
   (xtype (ancestor object)))
@@ -18,12 +21,15 @@
     ;; TAKEing the easy way out, need to write this decently one day
     (print (take object) stream)))
 
-;;;; permutations
-;;;;
-;;;; Permutations interchange the dimension indexes.
+;;;; Permutations
+;;;
+;;; Permutations interchange the dimension indexes.   Useful for
+;;; transposing and similar structural modifications for computing. 
 
-(defgeneric permutation (object &rest permutation)
-  (:documentation "Permutation of indexes."))
+(defgeneric permutation (object &rest permutation-specification)
+  (:documentation "Permutation of indexes.  This allows as a special
+  case, matrix transpose, but also similar reformatting of array
+  structures to expedite computations."))
 
 ;;;; permutation-view
 ;;;;
@@ -77,10 +83,10 @@
 ;;;; !!! maybe I should write transpose as a special case of
 ;;;; !!! permutation.  Could make it much faster.  Do it when needed.
 
-
-;;; AJR:  We have a possible evil conflict -- Lisp-Matrix Slices are
-;;; something else, not corresponding to this matlab/R/python-ish
-;;; meaning of slicing.
+;;; AJR: We have a possible evil conflict -- LISP-MATRIX:SLICE is
+;;; something else, both more general, less clear, and not as focused;
+;;; the LISP-MATRIX:SLICE does not correspond well to this
+;;; matlab/R/python-ish XARRAY:SLICE meaning.
 
 ;;;; slices
 ;;;;
@@ -93,7 +99,10 @@
 ;;; (guarantee rectangle-ness -- no ragged results).
 
 (defgeneric slice (object &rest index-specifications)
-  (:documentation "Slice of an object."))
+  (:documentation "Slice (view of a structured subset) of an xref-able
+  object.  The index-specifications should be objects whose number
+  equals the number of dimensions.  Examples are:
+     "))
 
 ;;;; slice-view
 ;;;;
