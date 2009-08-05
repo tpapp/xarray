@@ -19,13 +19,13 @@
 (deftestsuite xarray-ut ()
   ((array-ex0 #2A((11 12 13 14) (21 22 23 24) (31 32 33 34)))
    (array-ex1 #2A((21 22 23 24)))
-   (array-ex2 #2A((12)(22)(32)))))
+   (array-ex2 #2A((12)(22)(32)))
+   (array-ex3 #(12 22 32))))
 
 (deftestsuite xarray-ut-xref (xarray-ut) ())
 (deftestsuite xarray-ut-xrank (xarray-ut) ())
 (deftestsuite xarray-ut-xdims (xarray-ut) ())
 (deftestsuite xarray-ut-slice (xarray-ut) ())
-
 
 ;; Initial set of tests done on the interface to native lisp ARRAY
 ;; data structure.  We probably should add a list-of-list structure as
@@ -34,18 +34,21 @@
 ;; xref on arrays
 
 (addtest (xarray-ut-xref) xref-1
-	 (ensure (equal 1 (xref array-ex1 0 0))))
+	 (ensure (equal 21 (xref array-ex1 0 0))))
 
 (addtest (xarray-ut-xref) xref-2
-	 (ensure (equal 1 (xref array-ex2 0))))
+	 (ensure-error (equal 1 (xref array-ex2 0))))
 
 ;; xrank on arrays
 
 (addtest (xarray-ut-xrank) xrank-1
-	 (ensure (= 1 (xrank array-ex2))))
+	 (ensure (= 2 (xrank array-ex2))))
 
 (addtest (xarray-ut-xrank) xrank-2
 	 (ensure (= 2 (xrank array-ex1))))
+
+(addtest (xarray-ut-xrank) xrank-3
+	 (ensure (= 1 (xrank array-ex3))))
 
 ;; slice on arrays
 
@@ -85,7 +88,7 @@
 
 
 (addtest (xarray-ut-slice) slice-0
-	 (ensure (slice array-ex1 1 '-1)))
+	 (ensure (slice array-ex1 '(1) '(-1))))
 
 (addtest (xarray-ut-slice) slice-1
 	 (ensure (equal array-ex2 (slice array-ex1 '(1) '(0)))))
@@ -98,7 +101,7 @@
 
 #|
  (run-tests :suite 'xarray-ut)
- ; => #<Results for XARRAY-UT 8 Tests, 2 Failures, 1 Error>
+ ; => #<Results for XARRAY-UT 9 Tests, 4 Failures, 0 Error>
 
  (describe (run-tests :suite 'xarray-ut))
 
