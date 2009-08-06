@@ -68,40 +68,67 @@
    (array-ex2 #2A((12)(22)(32))))
 
   (macrolet
-      ((ps1 (&rest indices) `(format t "~A~%" (slice array-ex0 ,@indices))))
-    ;(ps1 1 1) ;=> 22 ERROR, to debug!
-    (ps1 (list 1) (list 1))
-    (ps1 '(1) '(1 1))
-    (ps1 (list 0 2) (list 1 3))
-    (ps1 '(1) '(1 1))
-    (ps1 '(1) '(1 0))
-    (ps1 '(1) '(0))
-    (ps1 :all '(2))
-    (ps1 :rev '(2))
-    (ps1 '(1) :all)
-    (ps1 '(1) :rev)
-    (ps1 '(1 0) '(1 0))
-    (ps1 '(0 1) '(0 1)))
+      ((ps0 (&rest indices) `(format t "~A~%" (slice array-ex0 ,@indices))))
+    ;(ps0 1 1) ;=> 22 ERROR, to debug!
+    (ps0 :all '(1))
+    (ps0 '(1) :all)
+    (ps0 (list 1) (list 1))
+    (ps0 '(1) '(1 1))
+    (ps0 (list 0 2) (list 1 3))
+    (ps0 '(1) '(1 1))
+    (ps0 '(1) '(1 0))
+    (ps0 '(1) '(0))
+    (ps0 :all '(2))
+    (ps0 :rev '(2))
+    (ps0 '(1) :all)
+    (ps0 '(1) :rev)
+    (ps0 '(1 0) '(1 0))
+    (ps0 '(0 1) '(0 1)))
    nil)
+
+ (defparameter arry-ex0 #2A((11 12 13 14) (21 22 23 24) (31 32 33 34)))
+ (defparameter arry-ex1 #2A((21 22 23 24)))
+ (defparameter arry-ex2 #2A((12)(22)(32)))
+ (defparameter arry-ex3 #(12 22 32))
+
+ (princ-and-equalp #2A((11))
+		  (take  (slice arry-ex0 '(0) '(0))))
 
 |#
 
+(defmacro equalp-arr-xref (my-array my-xrefable)
+  `(equalp ,my-array (take ,my-xrefable)))
+
+(defmacro princ-and-equalp (my-array my-xrefable)
+  `(progn 
+     (princ ,my-array)
+     (princ ,my-xrefable)
+     (equalp-arr-xref ,my-array ,my-xrefable)))
+
 
 (addtest (xarray-ut-slice) slice-0
-	 (ensure (slice array-ex1 '(1) '(-1))))
+	 (ensure
+	  (equalp #2A((11))
+		  (take  (slice array-ex0 '(0) '(0))))))
 
 (addtest (xarray-ut-slice) slice-1
-	 (ensure (equal array-ex2 (slice array-ex1 '(1) '(0)))))
+	 (ensure
+	  (equalp array-ex1
+		  (take (slice array-ex0 '(1) :all)))))
 
 (addtest (xarray-ut-slice) slice-1a
-	 (ensure (equal array-ex2 (slice array-ex1 '(1) '()))))
+	 (ensure
+	  (equalp array-ex2
+		  (take (slice array-ex0 :all '(1) )))))
 
 (addtest (xarray-ut-slice) slice-2
-	 (ensure (equal array-ex2 (slice array-ex1 '(1 0) '(1 0)))))
+	 (ensure
+	  (equalp #2A ((12 13) (22 23))
+		  (take (slice array-ex0 '(0 1) '(1 2))))))
 
 #|
  (run-tests :suite 'xarray-ut)
- ; => #<Results for XARRAY-UT 9 Tests, 4 Failures, 0 Error>
+ ; => #<Results for XARRAY-UT 9 Tests, 0 Failures, 0 Error>
 
  (describe (run-tests :suite 'xarray-ut))
 
