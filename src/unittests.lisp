@@ -17,21 +17,46 @@
 ;; (run-xarray-tests)
 
 (deftestsuite xarray-ut ()
-  ((array-ex0 #2A((11 12 13 14) (21 22 23 24) (31 32 33 34)))
-   (array-ex1 #2A((21 22 23 24)))
-   (array-ex2 #2A((12)(22)(32)))
-   (array-ex3 #(12 22 32))))
+  ((array-ex0 #2A((11 12 13 14 15)
+		  (21 22 23 24 25)
+		  (31 32 33 34 35)
+		  (41 42 43 44 45)))
+   (array-ex1 #2A((21 22 23 24 25)))
+   (array-ex2 #2A((12)
+		  (22)
+		  (32)
+		  (42)))
+   (array-ex3 #((22 23 24)
+		(32 33 34)))
+   (array-ex4 #((22 32)
+		(23 33)
+		(24 34)))
+   (lol-ex0 (list (list 11 12 13 14 15)
+		  (list 21 22 23 24 25)
+		  (list 31 32 33 34 35)
+		  (list 41 42 43 44 45)))
+   (lol-ex1 (list (list 21 22 23 24 25)))
+   (lol-ex2 (list (list 12)
+		  (list 22)
+		  (list 32)
+		  (list 42)))
+   (lol-ex3 (list (list 22 23 24)
+		  (list 32 33 34)))
+   (lol-ex4 (list (list 22 32)
+		  (list 23 33)
+		  (list 24 34)))))
 
-(deftestsuite xarray-ut-xref (xarray-ut) ())
+;; Test suite for each generic verb
+(deftestsuite xarray-ut-xref  (xarray-ut) ())
 (deftestsuite xarray-ut-xrank (xarray-ut) ())
-(deftestsuite xarray-ut-xdims (xarray-ut) ())
+(deftestsuite xarray-ut-xdims (xarray-ut) ()) ; includes range
 (deftestsuite xarray-ut-slice (xarray-ut) ())
+(deftestsuite xarray-ut-take  (xarray-ut) ())
 
 ;; Initial set of tests done on the interface to native lisp ARRAY
-;; data structure.  We probably should add a list-of-list structure as
-;; a second example of an xref-able class.
+;; data structure. 
 
-;; xref on arrays
+;; xref on 1-d arrays
 
 (addtest (xarray-ut-xref) xref-1
 	 (ensure (equal 21 (xref array-ex1 0 0))))
