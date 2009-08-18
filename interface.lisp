@@ -21,11 +21,11 @@
   (:documentation "Return the type of elements.  If no restriction is
   imposed, return t."))
 
-
 ;;; Q: for Tamas: should we worry about confusing array-rank with
 ;;; numerical rank of matrices?  Or am I(AJR) just confused?
 (defgeneric xrank (object)
-  (:documentation "Returns the number of dimensions of object."))
+  (:documentation "The number of dimensions of object.")
+  (:method (object) (length (xdims object))))
 
 (defgeneric xdims (object)
   (:documentation "Return a list of dimensions of object.  The list
