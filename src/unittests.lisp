@@ -22,10 +22,15 @@
 		  (31 32 33 34 35)
 		  (41 42 43 44 45)))
    (array-ex1 #2A((21 22 23 24 25)))
+   (array-ex1a #1A(21 22 23 24 25))
    (array-ex2 #2A((12)
 		  (22)
 		  (32)
 		  (42)))
+   (array-ex2a #1A(12
+		   22
+		   32
+		   42))
    (array-ex3 #((22 23 24)
 		(32 33 34)))
    (array-ex4 #((22 32)
@@ -56,24 +61,37 @@
 ;; Initial set of tests done on the interface to native lisp ARRAY
 ;; data structure. 
 
-;; xref on 1-d arrays
+;; xref 
 
 (addtest (xarray-ut-xref) xref-1
-	 (ensure (equal 21 (xref array-ex1 0 0))))
+	 (ensure (equal 23 (xref array-ex0 1 2))))
 
 (addtest (xarray-ut-xref) xref-2
-	 (ensure-error (equal 1 (xref array-ex2 0))))
+	 (ensure (equal 23 (xref array-ex1 0 2))))
+
+;;; Why is this an error?  Weird?!
+(addtest (xarray-ut-xref) xref-3
+	 (ensure (equal 23 (xref array-ex1a 2))))
+
+(addtest (xarray-ut-xref) xref-4
+	 (ensure-error (equal 32 (xref array-ex2 2 0))))
+
+(addtest (xarray-ut-xref) xref-5
+	 (ensure-error (equal 32 (xref array-ex2 2))))
+
+(addtest (xarray-ut-xref) xref-6
+	 (ensure-error (equal 32 (xref array-ex2a 2))))
 
 ;; xrank on arrays
 
 (addtest (xarray-ut-xrank) xrank-1
-	 (ensure (= 2 (xrank array-ex2))))
+	 (ensure (= 2 (xrank array-ex0))))
 
 (addtest (xarray-ut-xrank) xrank-2
 	 (ensure (= 2 (xrank array-ex1))))
 
 (addtest (xarray-ut-xrank) xrank-3
-	 (ensure (= 1 (xrank array-ex3))))
+	 (ensure (= 1 (xrank array-ex1a))))
 
 ;; slice on arrays
 
