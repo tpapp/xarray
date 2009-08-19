@@ -17,6 +17,43 @@
 ;;;; out of bounds, or writing non-writable elements or elements with
 ;;;; incorrect type are available. (!!! see notes there)
 
+
+;;; In order to know if we can use this, we need to be able to check
+;;; that we actually can use it.  Silly, eh?
+
+#|
+ (defvar *xrefable-classes* '(array
+			     listoflist)
+  "List of symbols of classes/objects which are xref'able.  Please add
+  to this list when leveraging the generics.   So,
+      (add-xrefable-class 'matrix-like) ; for example.
+ ")
+
+ (defun add-xrefable-class (class-symbol)
+  "add symbol to list of xref-able classes."
+  (pushnew class-symbol *xrefable-classes*))
+
+ (defun xrefable-p (class-symbol)
+  "Return T if we can use the xref technology."
+  (find class-symbol *xrefable-classes*))
+
+ (defgeneric xmake (base-class dimensions &rest)
+  (:documentation "makes an xref'able object, by default, a lisp array.
+     For Lisp arrays, the following keys hold:
+          element-type initial-element initial-contents adjustable 
+          fill-pointer displaced-to displaced-index-offset
+     and for example, 
+        (xmake 'array '(5 3)) ; 5 row, 3 column lisp array
+     ")
+  (:method ((base-class (:eq 'array)) dimensions &rest initvals)
+    (make-array dimensions initvals))
+  (:method ((base-class (:eq 'listoflist)) dimensions &rest initvals)
+    (make-array dimensions initvals)))
+
+|#
+
+;;; Access API
+
 (defgeneric xtype (object)
   (:documentation "Return the type of elements.  If no restriction is
   imposed, return t."))
@@ -90,7 +127,10 @@
 ;;;;  take copies the elements of an xrefable object to an array.
 
 ;; AJR: critical to ensure object is xref-able?  No, since an error
-;; will get thrown at the xdims point.
+;; will get thrown at the xdims point.  And while we could add a class
+;; to the precedence list post-hoc, it seems a bit ugly...  we could
+;; dispatch on arrays, lists, etc.
+
 (defgeneric take (object &key map-function type)
   (:method (object &key map-function (type (xtype object)))
     ;; fallback case
