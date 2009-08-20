@@ -46,9 +46,9 @@
         (xmake 'array '(5 3)) ; 5 row, 3 column lisp array
      ")
   (:method ((base-class (:eq 'array)) dimensions &rest initvals)
-    (make-array dimensions initvals))
+    (apply #'make-array dimensions initvals))
   (:method ((base-class (:eq 'listoflist)) dimensions &rest initvals)
-    (make-array dimensions initvals)))
+    (apply #'make-listoflist dimensions initvals)))
 
 |#
 
