@@ -74,13 +74,13 @@
 	 (ensure (equal 23 (xref array-ex1a 2))))
 
 (addtest (xarray-ut-xref) xref-4
-	 (ensure-error (equal 32 (xref array-ex2 2 0))))
+	 (ensure (equal 32 (xref array-ex2 2 0))))
 
 (addtest (xarray-ut-xref) xref-5
 	 (ensure-error (equal 32 (xref array-ex2 2))))
 
 (addtest (xarray-ut-xref) xref-6
-	 (ensure-error (equal 32 (xref array-ex2a 2))))
+	 (ensure (equal 32 (xref array-ex2a 2))))
 
 ;; xrank on arrays
 
@@ -171,7 +171,7 @@
 
 #|
  (run-tests :suite 'xarray-ut)
- ; => #<Results for XARRAY-UT 9 Tests, 0 Failures, 0 Error>
+ ; => #<Results for XARRAY-UT 0 Tests, 0 Failures, 0 Error>
 
  (describe (run-tests :suite 'xarray-ut))
 
