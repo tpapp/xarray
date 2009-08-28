@@ -96,6 +96,13 @@
   objects are writable, and methods needed otherwise (for example,
   views might be locked to be read-only, set by flags.")) 
 
+;;; AJR:EXTENSION: We consider 2 approaches.  XREF, (SETF XREF), and
+;;; XSETF are speed-optimized, to maintain Tamas' requirements.  XREF*
+;;; and (SETF XREF*) are flexibility-optimized, closer to the
+;;; general-purpose access from R, MATLAB, and Python, i.e. combining
+;;; xref, slice, etc, to provide flexible getter/setter access to
+;;; xrefable structures.
+
 (defgeneric xref (object &rest subscripts)
   (:documentation "Accesses the element of the object specified by
   subscripts."))
@@ -103,6 +110,19 @@
 (defgeneric (setf xref) (value object &rest subscripts)
   (:documentation "Accesses the element of the object specified by
   subscripts.  Methods should check x"))
+
+;;; AJR:NEW!  extensible, NOT optimized (at least not initially). 
+
+;;; when the following are congruent with XREF or (SETF XREF), we could use those...?
+(defgeneric xref* (object &rest subscripts &key &allow-other-keys) ; ?
+  (:documentation "Accesses elements of the object specified by
+  subscripts. Keywords control result-type as well as flexible access
+  to substructures, not necessarily scalar results."))
+ 
+(defgeneric (setf xref*) (value object &rest subscripts &key &allow-other-keys) ; ?
+  (:documentation "Sets the elements of the object specified by
+  subscripts.  Methods should check object.  Generalizes the methods
+  XREF and (SETF XREF) and XSETF into a single structure."))
 
 ;;;; !! at the experimental stage I am not using these conditions.
 ;;;; !! should the be mandatory later on? work out specs
