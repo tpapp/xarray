@@ -67,7 +67,8 @@
 (defgeneric xdims (object)
   (:documentation "Return a list of dimensions of object.  The list
   does not share structure with anything, so it can be freely
-  modified."))
+  modified.  This must be defined for an xref-able object, unlike the
+  other xdim{*.} functions "))
 
 (defgeneric xdims* (object)
   (:method (object)
@@ -80,7 +81,7 @@
 
 (defgeneric xdim (object axis-number)
   (:method (object axis-number)
-    ;; not the most efficient, but a reasonable fallback if not defined
+    ;; not necessarily the most efficient, but reasonable if undefined
     (nth axis-number (xdims object)))
   (:documentation "Return the axis-number dimension of object."))
 

@@ -171,7 +171,7 @@
 
 #|
  (run-tests :suite 'xarray-ut)
- ; => #<Results for XARRAY-UT 0 Tests, 0 Failures, 0 Error>
+ ; => #<Results for XARRAY-UT 13 Tests, 0 Failures, 0 Error>
 
  (describe (run-tests :suite 'xarray-ut))
 

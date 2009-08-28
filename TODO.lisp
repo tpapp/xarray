@@ -23,7 +23,7 @@
 
 (in-package :xarray-ut)
 (run-tests :suite 'xarray-ut)
-;; => #<Results for XARRAY-UT 13 Tests, 0 Errors, 2 Failures>
+;; => #<Results for XARRAY-UT 13 Tests, 0 Errors, 0 Failures>
 (describe (run-tests :suite 'xarray-ut))
 
 ;;; Development
