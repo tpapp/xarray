@@ -8,7 +8,8 @@
 
 (defclass view ()
   ((ancestor :initarg :ancestor :reader ancestor 
-	     :documentation "an underlying object that is accessible with xref")))
+	     :documentation "an underlying object that is accessible with
+                             xref")))
 
 (defmethod xtype ((object view))
   (xtype (ancestor object)))
@@ -41,14 +42,17 @@
     (unless (vector-within-dimension-p #|valid-permutation-p|#
 	     permutation (xrank object))
       (error "permutation ~a is not valid" permutation))
-    (make-instance 'permutation-view :ancestor object :permutation permutation)))
+    (make-instance 'permutation-view :ancestor object
+		   :permutation permutation)))
 
 (defmethod initialize-instance :after ((object permutation-view) &key)
   ;; save dimensions
   (with-slots (ancestor permutation dimensions) object
     (setf dimensions 
-	  (coerce (permute-sequence permutation (xdims ancestor)) 'int-vector)))
-  ;; !!! note: do we want to cache coefficients for calculating rm-index? not now
+	  (coerce (permute-sequence permutation (xdims ancestor))
+		  'int-vector)))
+  ;; !!! note: do we want to cache coefficients for calculating
+  ;; !!! rm-index? not now
   object)
 
 (defmethod xrank ((object permutation-view))
@@ -145,7 +149,7 @@ Valid index-specification specifications (a and b are integers):
        (cons (1- dimension) (- dimension)))
       ;; single index, dimension dropped
       ((integerp index-specification)
-       (convert-and-check index-specification) 0)
+       (convert-and-check index-specification))
       ;; range or single index (dimension not dropped)
       ((and (listp index-specification) (every #'integerp index-specification))
        (ecase (length index-specification)
@@ -156,7 +160,7 @@ Valid index-specification specifications (a and b are integers):
 		(cons left (- right left (if (<= left right) -1 1))))))))
       ;; vector, arbitrary specification
       ((vectorp index-specification)
-       (if (vector-within-dimension-p #|valid-integer-subset-p|#
+       (if (vector-within-dimension-p
 	    index-specification dimension)
 	   index-specification
 	   (error "~a is not a valid integer subset of [0,~a)"
@@ -219,7 +223,7 @@ no error checking.  Return nil for dropped dimensions."
 (defmethod xref ((object slice-view) &rest subscripts)
   (with-slots (ancestor index-specifications dimensions) object
   ;; Check that the length of subscripts matches rank.
-    (unless (= (length dimensions) (length index-specifications))
+    (unless (= (length dimensions) (length subscripts))
       (error "incorrect number of subscripts"))
     ;; convert and apply
     (apply #'xref ancestor 
@@ -228,7 +232,7 @@ no error checking.  Return nil for dropped dimensions."
 (defmethod (setf xref) (value (object slice-view) &rest subscripts)
   (with-slots (ancestor index-specifications dimensions) object
   ;; Check that the length of subscripts matches rank.
-    (unless (= (length dimensions) (length index-specifications))
+    (unless (= (length dimensions) (length subscripts))
       (error "incorrect number of subscripts"))
     ;; convert and apply
     (setf (apply #'xref ancestor 

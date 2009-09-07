@@ -138,8 +138,8 @@ using dimensions (also a vector).  Checks for boundaries and rank."
   "Numeric type classifier, finds the smallest subtype that can
   accomodate the elements of list, in the ordering fixnum < integer <
   float < complex < t.  Rational, float (any kind) are classified as
-  float, and complex numbers as (complex double-float).  Meant to be
-  used by simple array-constructing functions.
+  double-float, and complex numbers as (complex double-float).  Meant
+  to be used by simple array-constructing functions.
   Upgraded-array-element-type is called on end result."
   (upgraded-array-element-type 
    (case (reduce #'max list
