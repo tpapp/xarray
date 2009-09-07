@@ -57,13 +57,13 @@
 (addtest carray-1
   (let ((array (carray* '(2 3) 0 1d0 2 6/2 5s0 6)))
     (ensure-same array #2A((0.0d0 1.0d0 2.0d0) (3.0d0 5.0d0 6.0d0)))
-    (ensure-same (array-element-type array) 'double-float)))
+    (ensure-same (array-element-type array) (upgraded-array-element-type 'double-float))))
 
 (addtest carray-2
   (let ((array (carray* '(2 3) 0 1d0 2 6/2 5s0 #C(6 19))))
     (ensure-same array 
 		 #2A((#C(0.0d0 0.0d0) #C(1.0d0 0.0d0) #C(2.0d0 0.0d0))
 		     (#C(3.0d0 0.0d0) #C(5.0d0 0.0d0) #C(6.0d0 19.0d0))))
-    (ensure-same (array-element-type array) '(complex double-float))))
+    (ensure-same (array-element-type array) (upgraded-array-element-type '(complex double-float)))))
 
 (run-tests :suite 'xarray)
