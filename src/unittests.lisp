@@ -36,6 +36,7 @@
    (array-ex4 #((22 32)
 		(23 33)
 		(24 34)))
+
    (lol-ex0 (list (list 11 12 13 14 15)
 		  (list 21 22 23 24 25)
 		  (list 31 32 33 34 35)
@@ -49,7 +50,24 @@
 		  (list 32 33 34)))
    (lol-ex4 (list (list 22 32)
 		  (list 23 33)
-		  (list 24 34)))))
+		  (list 24 34)))
+
+   
+   (array3-ex1 #3A(((111 112)
+		    (121 122))
+		   ((211 212)
+		    (221 222))
+		   ((311 312)
+		    (321 322))))
+
+   (lol3-ex1 (list (list (list 111 112)
+			 (list 121 122))
+		   (list (list 211 212)
+			 (list 221 222))
+		   (list (list 311 312)
+			 (list 321 322))))
+
+   ))
 
 ;; Test suite for each generic verb
 (deftestsuite xarray-ut-xref  (xarray-ut) ())

@@ -12,6 +12,11 @@
 	   xref* 
 	   ;; xref-view 
 
+
+	   ;; list-of-list tools
+	   listoflistp transpose-listoflist equal-listoflist 
+	   listoflist->array
+
 	   ;; export conditions as well...?
 	   ))
 

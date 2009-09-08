@@ -1,6 +1,6 @@
 ;;; -*- mode: lisp -*-
 
-;;; Time-stamp: <2009-08-27 08:35:38 tony>
+;;; Time-stamp: <2009-09-02 08:10:15 tony>
 ;;; Creation:   <2008-09-08 08:06:30 tony>
 ;;; File:       listoflist.lisp
 ;;; Author:     AJ Rossini <blindglobe@gmail.com>
@@ -64,6 +64,7 @@
   "Test for conformance of structure: list whose sublists are of the
 same size (if ragged is T, then just test that list has elements of
 type list)."
+  (declare (ignore ragged))
   (check-type x list)
   (dotimes (i (length x))
     (let ((n (length (elt x 0)))
@@ -136,11 +137,13 @@ nested lists in first object."
 |#
   )
 
+#|
 (defmethod xdim ((object list) axis-number)
   (array-dimension object axis-number))
 
 (defmethod xsize ((object list))
   (array-total-size object))
+|#
 
 (defmethod xref-writable-p ((object list) &rest subscripts)
   "Lists always can be written to -- until we read-only it?!"
@@ -162,14 +165,15 @@ nested lists in first object."
 ;;;; Convenience functions for vector and list construction.  All
 ;;;;  return simple-lists of the specified type, the versions with *
 ;;;;  use numeric-type-classifier.
-
-(defun cvector (element-type &rest elements)
+#|
+ (defun cvector-lol (element-type &rest elements)
   "Return a (simple-list element-type (*)) containing elements,
 coerced to element-type."
   (let ((vector (make-list (length elements) :element-type element-type)))
     (fill-list-with-list vector elements)))
+|#
 
-(defun carray (element-type dimensions &rest elements)
+(defun carray-lol (element-type dimensions &rest elements)
   "Return a (simple-array element-type dimensions) containing elements,
 coerced to element-type."
   (unless (= (length elements) (reduce #'* dimensions))
@@ -177,14 +181,45 @@ coerced to element-type."
   (let ((vector (make-array dimensions :element-type element-type)))
     (fill-array-with-list vector elements)))
 
-(defun cvector* (&rest elements)
+(defun cvector*-lol (&rest elements)
   "Return a (simple-array element-type (*)) containing elements,
 coerced to element-type, where the elemen-type is obtained using
 numeric-type-classifier."
   (apply #'cvector (numeric-type-classifier elements) elements))
 
-(defun carray* (dimensions &rest elements)
+(defun carray*-lol (dimensions &rest elements)
   "Return a (simple-array element-type dimensions) containing elements,
 coerced to element-type, where the elemen-type is obtained using
 numeric-type-classifier."
   (apply #'carray (numeric-type-classifier elements) dimensions elements))
+
+
+(defun listoflist->array (lol &key (type 'row-major))
+  "From a listoflists structure, make an array.
+
+FIXME: need to verify that the listoflists is a valid structure (same
+size rows, typing if required, etc.
+
+<example>
+  (defparameter *mdfl-test*
+      (list (list 'a 1 2.1)
+            (list 'b 2 1.1)
+            (list 'c 1 2.0)
+            (list 'd 2 3.0)))
+  (length *mdfl-test*)
+  (length (elt *mdfl-test* 0))
+
+  (defparameter *mdfl-test-dt* (make-datatable-from-listoflists *mdfl-test*))
+  (array-dimensions *mdfl-test-dt*)
+</example>"
+  (let ((n (length lol))
+	(p (length (elt lol 0))))
+    (let ((result (make-array (list n p))))
+      (dotimes (i n)
+	(dotimes (j p)
+	  (if (equal  type 'row-major)
+	      (setf (aref result i j) (elt (elt lol i) j))
+	      (setf (aref result i j) (elt (elt lol j) i)))))
+      result)))
+
+ 

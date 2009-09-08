@@ -13,5 +13,6 @@
 	       (:file "utilities")
 	       (:file "interface")
 	       (:file "array")
+	       (:file "listoflist")
 	       (:file "view"))
   :depends-on (:cl-utilities :iterate :metabang-bind :ffa))
