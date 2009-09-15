@@ -73,9 +73,10 @@ addressed by subscripts is writable."))
 ;;;;  special, because they are the built-in CL type.  The function
 ;;;;  take copies the elements of an xrefable object to an array.
 
-(defgeneric take (object &key map-function type)
-  (:method (object &key map-function (type (xtype object)))
+(defgeneric take (object &key map-function type result-type)
+  (:method (object &key map-function (type (xtype object)) result-type)
     ;; fallback case
+    (declare (ignore result-type))
     (let ((array (make-array (xdims object) :element-type type))
 	  (dimensions (coerce (xdims object) 'fixnum-vector))
 	  (map-function (map-and-convert-function map-function 
@@ -91,11 +92,12 @@ addressed by subscripts is writable."))
 	    (setf (row-major-aref array i)
 		  (apply #'xref object (rm-subscripts dimensions i)))))
       array))
-  (:documentation "Return an array with element-type type (default:
-  xtype of object) containing the elements of an xrefable object.
-  Elements are coerced if necessary, and map is applied when given.
-  In case of a type conversion and no map, the converting function is
-  automatically constructed."))
+  (:documentation "Return an object of type result-type (default for
+  nil: array) with element-type type (default: xtype of object)
+  containing the elements of an xrefable object.  Elements are coerced
+  if necessary, and map is applied when given.  In case of a type
+  conversion and no map, the converting function is automatically
+  constructed."))
 
 ;;;; xsetf allow to set elements of an xrefable object to those of
 ;;;; another.
