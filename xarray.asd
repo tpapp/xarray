@@ -13,5 +13,6 @@
 	       (:file "utilities")
 	       (:file "interface")
 	       (:file "array")
-	       (:file "view"))
+	       (:file "view")
+	       (:file "operations"))
   :depends-on (:cl-utilities :iterate :metabang-bind))

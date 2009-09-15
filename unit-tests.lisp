@@ -15,7 +15,7 @@
 
 (in-package :xarray-unit-tests)
 
-;; HELPER FUNCTIONS
+;;; HELPER FUNCTIONS
 
 (defun fill-array-with-integers! (array)
   "Set the elements of array to integers from 0, in row-major order."
@@ -51,11 +51,15 @@
   :equality-test #'equalp
   :dynamic-variables (*a* (fill-array-with-integers! (make-array '(4 5)))))
 
+;;; UTILITIES
+
 (addtest (xarray)
   indexing
   (ensure (test-rm-index #(9 2 1 2 3 4 5)))
   (ensure (test-rm-subscripts #(9 2 1 2 3 4 5)))
   (ensure (test-cm-index '(2 94 7 11))))
+
+;;; VIEW
 
 (addtest permutation
   (ensure-same (take (permutation *a* 1 0))
@@ -84,6 +88,8 @@
   (ensure-same (take (row-major-projection *a* 2 10))
 	       #2A((0 1 2 3 4 5 6 7 8 9) (10 11 12 13 14 15 16 17 18 19))))
 
+;;; ARRAY
+
 (addtest carray-1
   (let ((array (carray* '(2 3) 0 1d0 2 6/2 5s0 6)))
     (ensure-same array #2A((0.0d0 1.0d0 2.0d0) (3.0d0 5.0d0 6.0d0)))
@@ -95,5 +101,9 @@
 		 #2A((#C(0.0d0 0.0d0) #C(1.0d0 0.0d0) #C(2.0d0 0.0d0))
 		     (#C(3.0d0 0.0d0) #C(5.0d0 0.0d0) #C(6.0d0 19.0d0))))
     (ensure-same (array-element-type array) (upgraded-array-element-type '(complex double-float)))))
+
+;;; OPERATIONS
+
+;;; !!! unit tests need to be written
 
 (run-tests :suite 'xarray)

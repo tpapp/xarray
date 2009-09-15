@@ -23,5 +23,9 @@
 
    view permutation permutation-view slice slice-view row-major-projection
    row-major-projection-view
+
+   ;; operations
+   
+   xdim= x+ x- x* x/ x=
    
    ))
