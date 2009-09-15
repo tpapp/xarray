@@ -15,6 +15,8 @@
 
 (in-package :xarray-unit-tests)
 
+;; HELPER FUNCTIONS
+
 (defun fill-array-with-integers! (array)
   "Set the elements of array to integers from 0, in row-major order."
   (let ((type (array-element-type array)))
@@ -22,10 +24,38 @@
       (setf (row-major-aref array i) (coerce i type))))
   array)
 
-(defparameter *a* (fill-array-with-integers! (make-array '(4 5))))
+(defun test-rm-subscripts (dimensions)
+  (let ((array (make-array (coerce dimensions 'list))))
+    (dotimes (i (reduce #'* dimensions))
+      (let ((subscripts (rm-subscripts dimensions i)))
+	(unless (= (apply #'array-row-major-index array subscripts) i)
+	  (error "(rm-subscripts ~a ~a) = ~a, incorrect" dimensions i subscripts))))
+    t))
+
+(defun test-rm-index (dimensions)
+  (dotimes (i (reduce #'* dimensions))
+    (let ((subscripts (rm-subscripts dimensions i)))
+      (unless (= (funcall #'rm-index dimensions (coerce subscripts 'vector)) i)
+	(error "(rm-subscripts ~a ~a) = ~a, incorrect" dimensions i subscripts))))
+  t)
+
+(defun test-cm-index (dimensions)
+  (dotimes (i (reduce #'* dimensions))
+    (let ((subscripts (cm-subscripts dimensions i)))
+      (unless (= (cm-index dimensions subscripts) i)
+	(error "(cm-subscripts ~a ~a) /= ~a" dimensions i subscripts))))
+  t)
+
 
 (deftestsuite xarray () ()
-  :equality-test #'equalp)
+  :equality-test #'equalp
+  :dynamic-variables (*a* (fill-array-with-integers! (make-array '(4 5)))))
+
+(addtest (xarray)
+  indexing
+  (ensure (test-rm-index #(9 2 1 2 3 4 5)))
+  (ensure (test-rm-subscripts #(9 2 1 2 3 4 5)))
+  (ensure (test-cm-index '(2 94 7 11))))
 
 (addtest permutation
   (ensure-same (take (permutation *a* 1 0))

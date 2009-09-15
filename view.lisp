@@ -1,10 +1,20 @@
 (in-package :xarray)
 
-;;;; !!!! FIXME: issues I need to think about
+;;;; Views are objects which provide an xarray interface.  Their sole
+;;;; purpose is mapping the subscripts they are addressed with into
+;;;; another set of subscripts, which is used to address another
+;;;; object called their ancestor.
 ;;;;
-;;;; Currently I am allowing permutation and slice indexes to appear
-;;;; more than once, this could be useful.  Should I forbid this?  Not
-;;;; in the CL spirit.
+;;;; Below you find some standard views with agnostic (and perhaps not
+;;;; super-fast) implementations.  Perhaps we can make them faster by
+;;;; assuming more about the objects and sometimes combining views.
+;;;; In my view, this would be premature optimization, I will do this
+;;;; when I see serious examples of views being a bottleneck (which I
+;;;; find quite hard to imagine). -- Tamas
+
+;;;; ??? Currently I am allowing permutation and slice indexes to
+;;;; appear more than once, this could be useful.  Should I forbid
+;;;; this?  Not in the CL spirit. -- Tamas
 
 (defclass view ()
   ((ancestor :initarg :ancestor :reader ancestor 
@@ -24,7 +34,7 @@
 ;;;; Permutations interchange the dimension indexes.
 
 (defgeneric permutation (object &rest permutation)
-  (:documentation "Permutation of indexes."))
+  (:documentation "View with permutation of indexes."))
 
 ;;;; permutation-view
 ;;;;
@@ -32,13 +42,13 @@
 ;;;; xrefable.
 
 (defclass permutation-view (view)
-  ((permutation :initarg :permutation :type int-vector
+  ((permutation :initarg :permutation :type fixnum-vector
 		:documentation "permutation")
-   (dimensions :initarg :dimensions :reader dimensions :type int-vector
+   (dimensions :initarg :dimensions :reader dimensions :type fixnum-vector
 	       :documentation "dimensions")))
 
 (defmethod permutation (object &rest permutation)
-  (let ((permutation (coerce permutation 'int-vector)))
+  (let ((permutation (coerce permutation 'fixnum-vector)))
     (unless (vector-within-dimension-p #|valid-permutation-p|#
 	     permutation (xrank object))
       (error "permutation ~a is not valid" permutation))
@@ -50,9 +60,7 @@
   (with-slots (ancestor permutation dimensions) object
     (setf dimensions 
 	  (coerce (permute-sequence permutation (xdims ancestor))
-		  'int-vector)))
-  ;; !!! note: do we want to cache coefficients for calculating
-  ;; !!! rm-index? not now
+		  'fixnum-vector)))
   object)
 
 (defmethod xrank ((object permutation-view))
@@ -60,9 +68,6 @@
 
 (defmethod xdims ((object permutation-view))
   (coerce (dimensions object) 'list))
-
-(defmethod xdims* ((object permutation-view))
-  (dimensions object))
 
 (defmethod xdim ((object permutation-view) axis-number)
   (aref (dimensions object) axis-number))
@@ -81,7 +86,11 @@
 ;;;; !!! maybe I should write transpose as a special case of
 ;;;; !!! permutation.  Could make it much faster.  Do it when needed.
 
-
+(defgeneric transpose (object)
+  (:documentation "Tranposed view.")
+  (:method (object)
+    (assert (= (xrank object) 2))
+    (permutation object 1 0)))
 
 ;;;; slices
 ;;;;
@@ -100,10 +109,10 @@
 (defclass slice-view (view)
   ((index-specifications :initarg :index-specifications
 			 :reader index-specifications
-			 :type vector
+			 :type fixnum-vector
 			 :documentation "vector of index speficiations")
    (dimensions :initarg :dimensions :reader dimensions
-	       :type int-vector
+	       :type fixnum-vector
 	       :documentation "dimensions, cached")))
 
 (defun parse-index-specification (index-specification dimension)
@@ -151,7 +160,8 @@ Valid index-specification specifications (a and b are integers):
       ((integerp index-specification)
        (convert-and-check index-specification))
       ;; range or single index (dimension not dropped)
-      ((and (listp index-specification) (every #'integerp index-specification))
+      ((and (listp index-specification) 
+	    (every #'integerp index-specification))
        (ecase (length index-specification)
 	 (1 (cons (convert-and-check (car index-specification)) 1))
 	 (2 (destructuring-bind (a b) index-specification
@@ -165,7 +175,8 @@ Valid index-specification specifications (a and b are integers):
 	   index-specification
 	   (error "~a is not a valid integer subset of [0,~a)"
 		  index-specification dimension)))
-      (t (error "can't interpret index-specification ~a" index-specification)))))
+      (t (error "can't interpret index-specification ~a" 
+		index-specification)))))
 
 (defun index-specification-dimension (index-specification)
   "Return dimension of parsed index-specification.  Internal function,
@@ -189,16 +200,13 @@ no error checking.  Return nil for dropped dimensions."
     (assert (= (length index-specifications) (xrank object)))
     (make-instance 'slice-view :ancestor object
 		   :index-specifications index-specifications
-		   :dimensions (coerce dimensions 'int-vector))))
+		   :dimensions (coerce dimensions 'fixnum-vector))))
 
 (defmethod xrank ((object slice-view))
   (length (dimensions object)))
 
 (defmethod xdims ((object slice-view))
   (coerce (dimensions object) 'list))
-
-(defmethod xdims* ((object slice-view))
-  (dimensions object))
 
 (defmethod xdim ((object slice-view) axis-number)
   (aref (dimensions object) axis-number))
@@ -258,9 +266,10 @@ no error checking.  Return nil for dropped dimensions."
 
 (defclass row-major-projection-view (view)
   ((dimensions :initarg :dimensions :reader dimensions
-	       :type int-vector
+	       :type fixnum-vector
 	       :documentation "dimensions")
-   (ancestor-dimensions :initarg :ancestor-dimensions :reader ancestor-dimensions
+   (ancestor-dimensions :initarg :ancestor-dimensions
+			:reader ancestor-dimensions
 			:type (simple-array integer (*))
 			:documentation "dimensions of ancestor")))
 
@@ -268,7 +277,7 @@ no error checking.  Return nil for dropped dimensions."
   ;; save ancestor-dimensions
   (with-slots (ancestor ancestor-dimensions) object
     (setf ancestor-dimensions 
-	  (coerce (xdims ancestor) 'int-vector)))
+	  (coerce (xdims ancestor) 'fixnum-vector)))
   ;; !!! note: do we want to cache coefficients for calculating rm-index? not now
   object)
 
@@ -277,7 +286,7 @@ no error checking.  Return nil for dropped dimensions."
     (error "Size of the object does not match the product of dimensions."))
   (make-instance 'row-major-projection-view 
 		 :ancestor object
-		 :dimensions (coerce dimensions 'int-vector)))
+		 :dimensions (coerce dimensions 'fixnum-vector)))
 
 (defmethod xrank ((object row-major-projection-view))
   (xrank (ancestor object)))
@@ -296,7 +305,8 @@ no error checking.  Return nil for dropped dimensions."
     (apply #'xref ancestor (rm-subscripts ancestor-dimensions
 					  (rm-index dimensions subscripts)))))
 
-(defmethod (setf xref) (value (object row-major-projection-view) &rest subscripts)
+(defmethod (setf xref) (value (object row-major-projection-view)
+			&rest subscripts)
   (with-slots (ancestor dimensions ancestor-dimensions) object
     (setf (apply #'xref ancestor (rm-subscripts ancestor-dimensions
 					  (rm-index dimensions subscripts)))

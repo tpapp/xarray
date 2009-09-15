@@ -2,6 +2,6 @@
 
 ;;;; commonly used types
 
-(deftype int-vector ()
-  "Simple array of one dimension, containing integers."
-  '(simple-array integer (*)))
+(deftype fixnum-vector ()
+  "Simple array of one dimension, containing fixnums."
+  '(simple-array fixnum (*)))

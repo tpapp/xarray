@@ -17,13 +17,21 @@
 	(return-from vector-within-dimension-p nil))))
   t)
 
-;; conversion functions between row-major indexes and subscripts
+;;;; conversion functions between row-major indexes and subscripts
+;;;;
+;;;; Needed for mapping flat indexes to array subscripts.  When
+;;;; traversing an array, it is recommended that column major
+;;;; subscripts are used (faster implementation), but row major
+;;;; subscripts can be used when they conform to the underlying
+;;;; representation (eg CL arrays).
 
 (defun rm-index (dimensions subscripts)
-  "Return a row-major flat index for given subscripts (coerced to a vector),
-using dimensions (also a vector).  Checks for boundaries and rank."
+  "Return a row-major flat index for given subscripts (coerced to a
+vector, list also accepted), using dimensions (also coerced to a
+vector, list also accepted).  Checks for boundaries and rank."
   (let ((rank (length dimensions))
-	(subscripts (coerce subscripts '(simple-array integer (*)))))
+	(subscripts (coerce subscripts 'fixnum-vector))
+	(dimensions (coerce dimensions 'fixnum-vector)))
     (unless (= (length subscripts) rank)
       (error "number of subscripts does not match rank"))
     (do ((i (1- rank) (1- i))
@@ -33,45 +41,50 @@ using dimensions (also a vector).  Checks for boundaries and rank."
       (let ((d (aref dimensions i))
 	    (s (aref subscripts i)))
 	(unless (within-dimension-p s d)
-	  (error 'xref-out-of-bounds-error :subscripts (coerce subscripts 'list)
+	  (error 'xref-out-of-bounds-error
+		 :subscripts (coerce subscripts 'list)
 		 :dimensions dimensions))
 	(incf sum (* prod s))
 	(setf prod (* prod d))))))
 
-
 (defun rm-subscripts (dimensions i)
   "Return i decomposed to a list of subscripts, taking
-  dimensions (which is a vector) as a row-major indexing scheme.  No
-  error checking is performed, meant for internal use."
-;  (check-type dimensions (array * (*)))
+  dimensions (which is coerced to a vector) as a row-major indexing
+  scheme.  No error checking is performed, meant for internal use."
   ;; !!! speed it up if necessary, type declarations
-  (do ((dimension-index (1- (length dimensions)) (1- dimension-index))
-       (subscripts nil))
-      ((minusp dimension-index) subscripts)
-    (multiple-value-bind (quotient remainder)
-	(floor i (aref dimensions dimension-index))
-      (setf subscripts (cons remainder subscripts)
-	    i quotient))))
+  (let ((dimensions (coerce dimensions 'fixnum-vector)))
+    (do ((dimension-index (1- (length dimensions)) (1- dimension-index))
+	 (subscripts nil))
+	((minusp dimension-index) subscripts)
+      (multiple-value-bind (quotient remainder)
+	  (floor i (aref dimensions dimension-index))
+	(setf subscripts (cons remainder subscripts)
+	      i quotient)))))
 
-;; (defun test-rm-subscripts (dimensions)
-;;   (let ((array (make-array (coerce dimensions 'list))))
-;;     (dotimes (i (reduce #'* dimensions))
-;;       (let ((subscripts (rm-subscripts dimensions i)))
-;; 	(unless (= (apply #'array-row-major-index array subscripts) i)
-;; 	  (error "(rm-subscripts ~a ~a) = ~a, incorrect" dimensions i subscripts))))
-;;     t))
+(defun cm-index (dimensions subscripts)
+  "Calculate the column-major flat index from subscripts (list of fixnums) and dimensions (list of fixnums)."
+  (declare (optimize speed))
+  (iter
+    (with cumprod := 1)
+    (for d :in dimensions)
+    (for s :in subscripts)
+    (declare (fixnum s d cumprod))
+    (assert (and (<= 0 s) (< s d)))
+    (summing (the fixnum (* s cumprod)))
+    (setf cumprod (* cumprod d))))
 
-;; (test-rm-subscripts #(9 2 1 2 3 4 5))
-
-;; (defun test-rm-index (dimensions)
-;;   (dotimes (i (reduce #'* dimensions))
-;;     (let ((subscripts (rm-subscripts dimensions i)))
-;;       (unless (= (funcall #'rm-index dimensions (coerce subscripts 'vector)) i)
-;; 	(error "(rm-subscripts ~a ~a) = ~a, incorrect" dimensions i subscripts))))
-;;   t)
-
-;; (test-rm-index #(9 2 1 2 3 4 5))
-
+(defun cm-subscripts (dimensions i)
+  "Return the column-major subscripts (list) for flat index
+i (fixnum), using dimensions (list of fixnums).  No error checking,
+for internal use only."
+  (declare (optimize speed))
+  (check-type i fixnum)
+  (iter
+    (for d :in dimensions)
+    (for (values quotient remainder) := (floor i d))
+    (declare (fixnum d quotient remainder))
+    (collecting remainder)
+    (setf i quotient)))
 
 (defun valid-permutation-p (vector &optional 
 			    (dimension (length vector) dimension-given-p))
@@ -102,10 +115,11 @@ using dimensions (also a vector).  Checks for boundaries and rank."
 	  (permuted nil (cons (aref vector (aref permutation i)) permuted)))
 	 ((minusp i) permuted))))
 	
-  (defun valid-integer-subset-p (vector dimension)
+(defun valid-integer-subset-p (vector dimension)
   "Return non-nil (t) iff vector is a valid subset (ie with no
-  repetition) of integers 0,1,...,(1- dimension)."
-  (let ((flags (make-array dimension :element-type 'bit :initial-element #b0)))
+repetition) of integers 0,1,...,(1- dimension)."
+  (let ((flags (make-array dimension :element-type 'bit
+			   :initial-element #b0)))
     (dotimes (i (length vector))
       (let ((p (aref vector i)))
 	;; check if we have seen this index

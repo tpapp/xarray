@@ -29,12 +29,6 @@
   does not share structure with anything, so it can be freely
   modified."))
 
-(defgeneric xdims* (object)
-  (:method (object)
-    (coerce (xdims object) 'int-vector))
-  (:documentation "Return an int-vector of dimensions of object.  May
-  not be freshly created, so you should not modify it."))
-
 (defgeneric xdim (object axis-number)
   (:method (object axis-number)
     ;; not the most efficient, but a reasonable fallback if not defined
@@ -83,7 +77,7 @@ addressed by subscripts is writable."))
   (:method (object &key map-function (type (xtype object)))
     ;; fallback case
     (let ((array (make-array (xdims object) :element-type type))
-	  (dimensions (xdims* object))
+	  (dimensions (coerce (xdims object) 'fixnum-vector))
 	  (map-function (map-and-convert-function map-function 
 						  (xtype object) type t)))
       (if map-function
@@ -110,17 +104,17 @@ addressed by subscripts is writable."))
   (:method (destination source &key map-function)
     (unless (equalp (xdims source) (xdims destination))
       (error "source and destination do not have conforming dimensions"))
-    (let ((dimensions (coerce (xdims source) 'int-vector))
+    (let ((dimensions (xdims source))
 	  (map-function (map-and-convert-function map-function
 						  (xtype source)
 						  (xtype destination) t)))
       (if map-function
 	  (dotimes (i (xsize source))
-	    (let ((subscripts (rm-subscripts dimensions i)))
+	    (let ((subscripts (cm-subscripts dimensions i)))
 	      (setf (apply #'xref destination subscripts)
 		    (funcall map-function (apply #'xref source subscripts)))))
 	  (dotimes (i (xsize source))
-	    (let ((subscripts (rm-subscripts dimensions i)))
+	    (let ((subscripts (cm-subscripts dimensions i)))
 	      (setf (apply #'xref destination subscripts)
 		    (apply #'xref source subscripts))))))
     destination)

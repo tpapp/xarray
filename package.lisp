@@ -7,7 +7,9 @@
 
    ;; types -- for internal use
 
-   ;; utilities -- for internal use
+   ;; utilities
+   
+   rm-index rm-subscripts cm-index cm-subscripts
    
    ;; interface
 
