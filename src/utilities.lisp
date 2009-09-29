@@ -128,23 +128,6 @@ repetition) of integers 0,1,...,(1- dimension)."
 	    (return-from valid-integer-subset-p nil))))
     t))
 
-;;;;  map & conversion interface
-;;;;
-;;;;  Some functions provide the option of both a map and conversion
-;;;;  to another type.  The convenience function below this defines
-;;;;  this interface.
-
-(defun map-and-convert-function (map-function source-type
-				 destination-type &optional identity-nil-p)
-  (cond 
-    ((and (not (equal source-type destination-type))
-	  (not (eq destination-type t))
-	  (not map-function))
-     (lambda (x) (coerce x destination-type)))
-    (map-function map-function)
-    (t (if identity-nil-p
-	   nil
-	   #'identity))))
 
 ;;;;  convenience functions for setting up arrays
 

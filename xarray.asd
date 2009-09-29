@@ -20,7 +20,7 @@
   :components 
   ((:module 
     "package-init"
-    :pathname #P "src/"
+    :pathname #P"src/"
     :components
     ((:file "package")))
    (:module
@@ -28,6 +28,7 @@
     :pathname #P"src/"
     :depends-on ("package-init")
     :serial t
+    :components
     ((:file "types")
      (:file "utilities")
      (:file "interface")))

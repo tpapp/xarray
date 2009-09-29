@@ -16,7 +16,7 @@
 ;;;   a Lisp type, if you are producing something else.  The default
 ;;;   methods return Lisp arrays.
 
-(defun xdim= (a b)
+(defun xdims= (a b)
   "Return non-nil iff the dimensions of A and B are the same."
   (equal (xdims a) (xdims b)))
 
@@ -65,7 +65,7 @@
   (:documentation "Return non-nil if A and B have the same
 dimensions,, and the sup|A-B| <= eps.")
   (:method (a b &optional (eps #.(sqrt single-float-epsilon)))
-    (assert (xdim= a b))
+    (assert (xdims= a b))
     (let ((dims (xdims a)))
       (dotimes (i (reduce #'* dims))
 	(let ((subscripts (cm-subscripts dims i)))
