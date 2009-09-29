@@ -179,3 +179,13 @@ repetition) of integers 0,1,...,(1- dimension)."
       (setf (row-major-aref array i) (coerce l type))
       (incf i)))
   array)
+
+(defun make-symbol* (&rest args)
+  "Build a symbol by concatenating each element of ARGS, and intern it
+  in the current package.  Elements can be strings or symbols."
+  (intern (apply #'concatenate 'string
+                 (mapcar (lambda (arg)
+                           (etypecase arg
+                             (symbol (symbol-name arg))
+                             (string arg)))
+                         args))))

@@ -3,16 +3,41 @@
 
 (in-package #:xarray-asd)
 
+(defparameter *fasl-directory*
+  (make-pathname :directory '(:relative
+			      #+sbcl "fasl-sbcl"
+			      #+openmcl "fasl-ccl"
+			      #+cmu "fasl-cmucl"
+			      #+clisp "fasl-clisp"
+			      #-(or sbcl openmcl clisp cmucl) "fasl"
+			      )))
+
 (defsystem #:xarray
   :description "" 
   :author "Tamas K Papp"
-  :license "LLGPL"
+  :license "MIT"
   :serial t
-  :components ((:file "package")
-	       (:file "types")
-	       (:file "utilities")
-	       (:file "interface")
-	       (:file "array")
-	       (:file "view")
-	       (:file "operations"))
+  :components 
+  ((:module 
+    "package-init"
+    :pathname #P "src/"
+    :components
+    ((:file "package")))
+   (:module
+    "basics"
+    :pathname #P"src/"
+    :depends-on ("package-init")
+    :serial t
+    ((:file "types")
+     (:file "utilities")
+     (:file "interface")))
+   (:module
+    "functionality"
+    :pathname #P"src/"
+    :depends-on ("basics")
+    :serial t
+    :components
+    ((:file "array")
+     (:file "view")
+     (:file "operations"))))
   :depends-on (:cl-utilities :iterate :metabang-bind))

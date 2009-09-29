@@ -18,10 +18,6 @@
 (defmethod xsize ((object array))
   (array-total-size object))
 
-(defmethod xref-writable-p ((object array) &rest subscripts)
-  (declare (ignore subscripts))
-  t)
-
 (defmethod xref ((object array) &rest subscripts)
   (apply #'aref object subscripts))
 

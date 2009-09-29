@@ -6,7 +6,8 @@
 ;;;; Objects accessible with xref are array-like objects, where
 ;;;; elements are indexed with (xrank object) subscripts, each ranging
 ;;;; from 0 to (1- (xdim object dimension)), inclusive.  Not all
-;;;; elements are writable, this can be tested with xref-writable-p.
+;;;; elements need to be setable, if they are not, trying to call
+;;;; (setf xref) on that element will signal a condition.
 ;;;;
 ;;;; Objects can have a particular type imposed on elements, which can
 ;;;; be queried with xtype.  Elements returned by xref are guaranteed
@@ -39,65 +40,52 @@
   (:method (object) (reduce #'* (xdims object))) ; default fallback
   (:documentation "Return the total number of elements in object."))
 
-(defgeneric xref-writable-p (object &rest subscripts)
-  (:method (object &rest subscripts) (declare (ignore subscripts)) t)
-  (:documentation "Return non-nil if and only if the element in object
-addressed by subscripts is writable."))
-
 (defgeneric xref (object &rest subscripts)
   (:documentation "Accesses the element of the object specified by subscripts."))
 
 (defgeneric (setf xref) (value object &rest subscripts)
   (:documentation "Accesses the element of the object specified by subscripts."))
 
-;;;; !! at the experimental stage I am not using these conditions.
-;;;; !! should the be mandatory later on? work out specs
 
-(define-condition xref-out-of-bounds-error (error)
+(define-condition xref-subscript-out-of-bounds (error)
   ((subscripts :initarg :subscripts :reader subscripts)
    (dimensions :initarg :dimensions :reader dimensions)))
 
-(define-condition xref-wrong-number-of-subscripts-error (error)
+(define-condition xref-wrong-number-of-subscripts (error)
   ((subscripts :initarg :subscripts :reader subscripts)
    (rank :initarg :rank :reader rank)))
 
-(define-condition xref-writing-readonly-error (error)
+(define-condition xref-setting-readonly (error)
   ;; !! maybe give some info on the writability?
   ((subscripts :initarg :subscripts :reader subscripts)))
 
-(define-condition xref-writing-type-error (error)
+(define-condition xref-incompatible-type (error)
   ;; !! maybe give some info on the type?
   ((subscripts :initarg :subscripts :reader subscripts)))
 
-;;;;  Even though this is a general interface, arrays are still a bit
-;;;;  special, because they are the built-in CL type.  The function
-;;;;  take copies the elements of an xrefable object to an array.
-
-(defgeneric take (object &key map-function type result-type)
-  (:method (object &key map-function (type (xtype object)) result-type)
+(defgeneric take (object &key as function &allow-other-keys)
+  (:method (object &key (as (eql nil)) function)
+    (take object :as 'array :map-function map-function ))
+  (:method (object &key (as (eql 'array)) function (element-type t))
     ;; fallback case
     (declare (ignore result-type))
-    (let ((array (make-array (xdims object) :element-type type))
-	  (dimensions (coerce (xdims object) 'fixnum-vector))
-	  (map-function (map-and-convert-function map-function 
-						  (xtype object) type t)))
-      (if map-function
+    (let ((array (make-array (xdims object) :element-type element-type))
+	  (dimensions (coerce (xdims object) 'fixnum-vector)))
+      (if function
 	  ;; map
 	  (dotimes (i (xsize object))
 	    (setf (row-major-aref array i)
-		  (funcall map-function 
+		  (funcall function 
 			   (apply #'xref object (rm-subscripts dimensions i)))))
-	  ;; no map
+	  ;; no mapping 
 	  (dotimes (i (xsize object))
 	    (setf (row-major-aref array i)
 		  (apply #'xref object (rm-subscripts dimensions i)))))
       array))
-  (:documentation "Return an object of type result-type (default for
-  nil: array) with element-type type (default: xtype of object)
-  containing the elements of an xrefable object.  Elements are coerced
-  if necessary, and map is applied when given.  In case of a type
-  conversion and no map, the converting function is automatically
-  constructed."))
+  (:documentation "Return an object of class :as (default for nil:
+  array), with other properties (eg element types for arrays) as
+  specified by the optional keyword arguments.  If function is
+  non-nil, it is called on each element."))
 
 ;;;; xsetf allow to set elements of an xrefable object to those of
 ;;;; another.

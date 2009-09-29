@@ -13,7 +13,9 @@
    
    ;; interface
 
-   xtype xrank xdims xdims* xdim xsize xref-writable-p take xref
+   xtype xrank xdims xdims* xdim xsize xref-subscript-out-of-bounds
+   xref-wrong-number-of-subscripts xref-setting-readonly
+   xref-incompatible-type take xref
 
    ;; array
 
