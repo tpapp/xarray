@@ -27,7 +27,7 @@
 (defmethod print-object ((object view) stream)
   (print-unreadable-object (object stream :type t :identity t)
     ;; TAKEing the easy way out, need to write this decently one day
-    (print (take object) stream)))
+    (print (take object 'array) stream)))
 
 ;;;; permutations
 ;;;;

@@ -114,7 +114,7 @@ for internal use only."
     (do ((i (1- dimension) (1- i))
 	  (permuted nil (cons (aref vector (aref permutation i)) permuted)))
 	 ((minusp i) permuted))))
-	
+
 (defun valid-integer-subset-p (vector dimension)
   "Return non-nil (t) iff vector is a valid subset (ie with no
 repetition) of integers 0,1,...,(1- dimension)."
@@ -127,6 +127,16 @@ repetition) of integers 0,1,...,(1- dimension)."
 	    (setf (aref flags p) 1)
 	    (return-from valid-integer-subset-p nil))))
     t))
+
+(defun invert-permutation (permutation)
+  "Return the inverse of a valid permutation vector (validity is
+not checked, results are not defined for invalid permutations)."
+  (check-type permutation fixnum-vector)
+  (let* ((n (length permutation))
+         (result (make-array n :element-type 'fixnum)))
+    (dotimes (i n)
+      (setf (aref result (aref permutation i)) i))
+    result))
 
 
 ;;;;  convenience functions for setting up arrays

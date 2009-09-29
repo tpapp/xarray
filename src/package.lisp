@@ -28,6 +28,6 @@
 
    ;; operations
    
-   xdim= x+ x- x* x/ x=
+   xdim= x+ x- x* x/ x= order
    
    ))

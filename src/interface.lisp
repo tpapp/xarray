@@ -63,13 +63,10 @@
   ;; !! maybe give some info on the type?
   ((subscripts :initarg :subscripts :reader subscripts)))
 
-(defgeneric take (object &key as function &allow-other-keys)
-  (:method (object &key (as (eql nil)) function)
-    (take object :as 'array :map-function map-function ))
-  (:method (object &key (as (eql 'array)) function (element-type t))
+(defgeneric take (object class &key function &allow-other-keys)
+  (:method (object (class (eql 'array)) &key function (element-type t))
     ;; fallback case
-    (declare (ignore result-type))
-    (let ((array (make-array (xdims object) :element-type element-type))
+     (let ((array (make-array (xdims object) :element-type element-type))
 	  (dimensions (coerce (xdims object) 'fixnum-vector)))
       (if function
 	  ;; map
@@ -82,10 +79,10 @@
 	    (setf (row-major-aref array i)
 		  (apply #'xref object (rm-subscripts dimensions i)))))
       array))
-  (:documentation "Return an object of class :as (default for nil:
-  array), with other properties (eg element types for arrays) as
-  specified by the optional keyword arguments.  If function is
-  non-nil, it is called on each element."))
+  (:documentation "Return an object converted to a given class, with
+  other properties (eg element types for arrays) as specified by the
+  optional keyword arguments.  If function is non-nil, it is called on
+  each element."))
 
 ;;;; xsetf allow to set elements of an xrefable object to those of
 ;;;; another.
@@ -110,5 +107,3 @@
     destination)
   (:documentation "Copy the elements of source to destination, with
   the usual semantics for map-function and type conversion"))
-	  
-  

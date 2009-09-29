@@ -74,3 +74,20 @@ dimensions,, and the sup|A-B| <= eps.")
 		      eps)
 	    (return-from x= nil)))))
     t))
+
+(defun order (vector predicate &key key stable-p)
+  "Return a vector of integers starting from 0, representing the
+permutation of elements in vector that would result if sorted
+according to predicate (which you can use in slice, etc).  Key is
+passed to sort.  If stable-p, stable-sort is used."
+  (bind (((length &rest other-dimensions) (xdims vector))
+         (work (make-array length)))
+    (when other-dimensions
+      (error "first argument is not a vector"))
+    (dotimes (i length)
+      (setf (aref work i) (cons (xref vector i) i)))
+    (funcall (if stable-p #'stable-sort #'sort) work predicate
+             :key (if key
+                      (compose key #'car)
+                      #'car))
+    (map 'fixnum-vector #'cdr work)))
