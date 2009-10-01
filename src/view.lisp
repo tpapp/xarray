@@ -311,3 +311,63 @@ no error checking.  Return nil for dropped dimensions."
     (setf (apply #'xref ancestor (rm-subscripts ancestor-dimensions
 					  (rm-index dimensions subscripts)))
 	  value)))
+
+;;;; flat-view
+;;;;
+;;;; A view where elements can be accessed by a "flat" index on
+;;;; [0,total size), but the actual mapping is
+;;;; implementation-dependent.  Mainly used for elementwise access
+;;;; where the order of elements does not matter, especially
+;;;; elementwise reductions with commutative operations (eg sum,
+;;;; product, maximum, etc).
+;;;;
+;;;; There are two special considerations for this view: (1) it only
+;;;; has to implement reading elements, not setting them, (2) it has
+;;;; to implement ancestor-subscripts, which map the flat index to
+;;;; that of the ancestor.
+
+(defgeneric flat (object)
+  (:documentation "Flat index for an object."))
+
+(defclass flat-view (view)
+  ((xsize :reader xsize :type fixnum :documentation "total size")
+   (ancestor-dimensions :reader ancestor-dimensions
+			:type list
+			:documentation "dimensions of ancestor")))
+
+(defmethod initialize-instance :after ((object flat-view) &key)
+  ;; save ancestor-dimensions
+  (with-slots (ancestor ancestor-dimensions xsize) object
+    (setf ancestor-dimensions 
+	  (coerce (xdims ancestor) 'list)
+          xsize (reduce #'* ancestor-dimensions)))
+  object)
+
+(defmethod flat (object)
+  (make-instance 'flat-view :ancestor object))
+
+(defmethod xrank ((object flat-view))
+  1)
+
+(defmethod xdims ((object flat-view))
+  (list (xsize object)))
+
+(defmethod xdim ((object flat-view) axis-number)
+  (if (zerop axis-number)
+      (xsize object)
+      (error 'xdim-invalid-axis-number)))
+
+(defmethod xref ((object flat-view) &rest subscripts)
+  (when (cdr subscripts)
+    (error 'xref-wrong-number-of-subscripts))
+  (let ((index (car subscripts)))
+    (assert (within-dimension-p index (xsize object)))
+    (apply #'xref (ancestor object) (cm-subscripts (ancestor-dimensions object) index))))
+
+(defgeneric ancestor-subscripts (object index)
+  (:documentation "Map the flat index the subscripts of the ancestor.")
+  ;; The purpose of this method is to help with the implementation of
+  ;; generic functions that find the subscripts of the largest element, etc.
+  (:method ((object flat-view) index)
+    (assert (within-dimension-p index (xsize object)))
+    (cm-subscripts (ancestor-dimensions object) index)))

@@ -182,3 +182,15 @@ not checked, results are not defined for invalid permutations)."
                              (symbol (symbol-name arg))
                              (string arg)))
                          args))))
+
+;;;;
+;;;;  Macros similar to decf, incf, ...
+;;;;
+
+(define-modify-macro maxf (&rest values) max
+		     "Replace with largest of the place and the given values.")
+
+(define-modify-macro minf (&rest values) min
+		     "Replace with smallest of the place and the given values.")
+
+(define-modify-macro multf (&rest values) * "Multiply (& set) the first argument by the rest.")

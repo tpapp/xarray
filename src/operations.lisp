@@ -91,3 +91,38 @@ passed to sort.  If stable-p, stable-sort is used."
                       (compose key #'car)
                       #'car))
     (map 'fixnum-vector #'cdr work)))
+
+(defmacro define-flat-reduction (name modify-macro docstring &body body)
+  "Define a generic function named NAME which reduces its argument
+elementwise.  body is spliced into the iterate loop, and can be used
+for early returns, etc.  See code for variable names."
+  (check-type name symbol)
+  (check-type modify-macro symbol)
+  (check-type docstring (or null string))
+  `(defgeneric ,name (a)
+     (:documentation ,docstring)
+     (:method (a)
+       (let* ((a (flat a))
+              (n (xsize a))
+              (result (xref a 0)))
+         (when (< 1 n)
+           (iter
+             (for i :from 1 :below n)
+             (,modify-macro result (xref a i))
+             ,@body))
+         result))
+     (:method ((a array))
+       (let ((n (array-total-size a))
+             (result (row-major-aref a 0)))
+         (when (< 1 n)
+           (iter
+             (for i :from 1 :below n)
+             (,modify-macro result (row-major-aref a i))
+             ,@body))
+         result))))
+    
+(define-flat-reduction xsum incf "Sum of the elements.")
+(define-flat-reduction xprod multf "Product of the elements."
+  (when (zerop result) (return)))
+(define-flat-reduction xmax maxf "Maximum of the elements.")
+(define-flat-reduction xmin minf "Minimum of the elements.")

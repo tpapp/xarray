@@ -72,11 +72,11 @@ Knuth (aka Fisher-Yates) shuffle."
   t)
 
 
+;;; TEST SUITE
+
 (deftestsuite xarray () ()
   :equality-test #'equalp
   :dynamic-variables (*a* (fill-array-with-integers! (make-array '(4 5)))))
-
-;;; UTILITIES
 
 (addtest (xarray)
   indexing
@@ -117,6 +117,15 @@ Knuth (aka Fisher-Yates) shuffle."
   row-major-projection
   (ensure-same (take (row-major-projection *a* 2 10) 'array)
 	       #2A((0 1 2 3 4 5 6 7 8 9) (10 11 12 13 14 15 16 17 18 19))))
+
+(addtest (xarray)
+  flat-reduction
+  ;; because of the implementation, this is also testing the flat view
+  (ensure-same (xsum *a*) 190)
+  (ensure-same (xprod *a*) 0)
+  (ensure-same (xprod #(1 2 3)) 6)
+  (ensure-same (xmax *a*) 19)
+  (ensure-same (xmin *a*) 0))
 
 ;;; ARRAY
 

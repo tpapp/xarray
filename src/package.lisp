@@ -9,13 +9,13 @@
 
    ;; utilities
    
-   rm-index rm-subscripts cm-index cm-subscripts
+   rm-index rm-subscripts cm-index cm-subscripts multf maxf minf
    
    ;; interface
 
    xtype xrank xdims xdims* xdim xsize xref-subscript-out-of-bounds
    xref-wrong-number-of-subscripts xref-setting-readonly
-   xref-incompatible-type take xref
+   xref-incompatible-type xdim-invalid-axis-number take xref
 
    ;; array
 
@@ -28,6 +28,6 @@
 
    ;; operations
    
-   xdim= x+ x- x* x/ x= order
+   xdim= x+ x- x* x/ x= order xsum xprod xmin xmax
    
    ))

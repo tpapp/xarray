@@ -63,8 +63,11 @@
   ;; !! maybe give some info on the type?
   ((subscripts :initarg :subscripts :reader subscripts)))
 
-(defgeneric take (object class &key function &allow-other-keys)
-  (:method (object (class (eql 'array)) &key function (element-type t))
+(define-condition xdim-invalid-axis-number (error)
+  ())
+
+(defgeneric take (object class &key function force-copy-p &allow-other-keys)
+  (:method (object (class (eql 'array)) &key function force-copy-p (element-type t))
     ;; fallback case
      (let ((array (make-array (xdims object) :element-type element-type))
 	  (dimensions (coerce (xdims object) 'fixnum-vector)))
@@ -80,9 +83,10 @@
 		  (apply #'xref object (rm-subscripts dimensions i)))))
       array))
   (:documentation "Return an object converted to a given class, with
-  other properties (eg element types for arrays) as specified by the
-  optional keyword arguments.  If function is non-nil, it is called on
-  each element."))
+other properties (eg element types for arrays) as specified by the
+optional keyword arguments.  If function is non-nil, it is called on
+each element.  The result may share structure with object, unless
+force-copy-p."))
 
 ;;;; xsetf allow to set elements of an xrefable object to those of
 ;;;; another.
