@@ -128,32 +128,40 @@ for early returns, etc.  See code for variable names."
 (define-flat-reduction xmin minf "Minimum of the elements.")
 
 ;;;; Instead of defining x... operator names for every function on
-;;;; earth, we provide some generic mapping constructs.  Because type
-;;;; information can be tricky to pass, you need to create the object
-;;;; you are mapping into.
+;;;; earth, we provide some generic mapping constructs.
+;;;;
+;;;; There are two ways to specify a target: using a symbol or a list,
+;;;; in which case the object will be created using xcreate or
+;;;; xcreate*, using the dimensions of the first argument, or
+;;;; supplying a target object of the appropriate type.
 
-(defun xmap (target function &rest arguments)
+(defun xmap (target-or-spec function &rest arguments)
   "Apply function to arguments elementwise, and save the result in target."
-  (unless arguments
-    (return-from xmap target))
-  (dolist (arg arguments)
-    (unless (xdims= target arg)
-      (error "Incompatible dimensions.")))
-  (let ((flat-arguments (mapcar #'column-major-projection arguments))
-        (flat-target (column-major-projection target)))
-    (dotimes (i (xsize flat-target))
-      (setf (xref flat-target i) (apply function (mapcar (lambda (flat-arg)
-                                                           (xref flat-arg i))
-                                                         flat-arguments)))))
-  target)
-
-(defmacro xmap* ((dimensions target-form) function &rest arguments)
-  "Bind dimensions to xdims of the first argument, and make it
-available during target-form, calling xmapinto with the result and the
-arguments.  Dimensions follow the conventions of bind, so you can
-destructure etc."
- (with-unique-names (arg1)
-    `(let ((,arg1 ,(first arguments)))
-       (xmapinto (bind ((,dimensions (xdims ,arg1)))
-                   ,target-form)
-                 ,function ,arg1 ,@(cdr arguments)))))
+  (flet ((check-dims (dims arguments)
+           (dolist (arg arguments)
+             (unless (equalp (xdims arg) dims)
+               (error "Dimensions ~a are incompatible with target dimension ~a."
+                      (xdims arg) dims)))))
+    (let* ((target
+            (typecase target-or-spec
+              (symbol
+                 (unless arguments
+                   (error "Can't determine target dimensions without arguments."))
+                 (let ((dims (xdims (car arguments))))
+                   (check-dims dims (cdr arguments))
+                   (xcreate target-or-spec dims)))
+              (list
+                 (unless arguments
+                   (error "Can't determine target dimensions without arguments."))
+                 (let ((dims (xdims (car arguments))))
+                   (check-dims dims (cdr arguments))
+                   (xcreate* target-or-spec dims)))
+              (t (check-dims (xdims target-or-spec) arguments)
+                 target)))
+           (flat-arguments (mapcar #'column-major-projection arguments))
+           (flat-target (column-major-projection target)))
+      (dotimes (i (xsize flat-target))
+        (setf (xref flat-target i) (apply function (mapcar (lambda (flat-arg)
+                                                             (xref flat-arg i))
+                                                           flat-arguments))))
+      target)))

@@ -178,7 +178,7 @@ Knuth (aka Fisher-Yates) shuffle."
   (let* ((args (iter
                  (repeat nargs)
                  (collecting (random-array dims))))
-         (result (apply #'xmap (make-array dims)
+         (result (apply #'xmap 'array
                         function args)))
     (iter
       (for i :from 0 :below (array-total-size result))
@@ -193,7 +193,5 @@ Knuth (aka Fisher-Yates) shuffle."
   (ensure (xmap-test '11 #'- 3))
   (ensure (xmap-test '(7 3) #'cos 1))
   (ensure (xmap-test '(119 7 13) #'exp 1)))
-  
-  
 
 ; (run-tests :suite 'xarray)

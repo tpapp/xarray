@@ -15,7 +15,8 @@
 
    xtype xrank xdims xdims* xdim xsize xref-subscript-out-of-bounds
    xref-wrong-number-of-subscripts xref-setting-readonly
-   xref-incompatible-type xdim-invalid-axis-number take xref
+   xref-incompatible-type xdim-invalid-axis-number xref xcreate
+   xcreate* take
 
    ;; array
 
@@ -28,6 +29,6 @@
 
    ;; operations
    
-   xdim= x+ x- x* x/ x= order xsum xprod xmin xmax xmap xmap*
+   xdim= x+ x- x* x/ x= order xsum xprod xmin xmax xmap
    
    ))
