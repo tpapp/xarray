@@ -126,3 +126,34 @@ for early returns, etc.  See code for variable names."
   (when (zerop result) (return)))
 (define-flat-reduction xmax maxf "Maximum of the elements.")
 (define-flat-reduction xmin minf "Minimum of the elements.")
+
+;;;; Instead of defining x... operator names for every function on
+;;;; earth, we provide some generic mapping constructs.  Because type
+;;;; information can be tricky to pass, you need to create the object
+;;;; you are mapping into.
+
+(defun xmap (target function &rest arguments)
+  "Apply function to arguments elementwise, and save the result in target."
+  (unless arguments
+    (return-from xmap target))
+  (dolist (arg arguments)
+    (unless (xdims= target arg)
+      (error "Incompatible dimensions.")))
+  (let ((flat-arguments (mapcar #'column-major-projection arguments))
+        (flat-target (column-major-projection target)))
+    (dotimes (i (xsize flat-target))
+      (setf (xref flat-target i) (apply function (mapcar (lambda (flat-arg)
+                                                           (xref flat-arg i))
+                                                         flat-arguments)))))
+  target)
+
+(defmacro xmap* ((dimensions target-form) function &rest arguments)
+  "Bind dimensions to xdims of the first argument, and make it
+available during target-form, calling xmapinto with the result and the
+arguments.  Dimensions follow the conventions of bind, so you can
+destructure etc."
+ (with-unique-names (arg1)
+    `(let ((,arg1 ,(first arguments)))
+       (xmapinto (bind ((,dimensions (xdims ,arg1)))
+                   ,target-form)
+                 ,function ,arg1 ,@(cdr arguments)))))

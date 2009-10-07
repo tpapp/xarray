@@ -23,11 +23,11 @@
 
    ;; view
 
-   view permutation permutation-view slice slice-view row-major-projection
-   row-major-projection-view
+   view permutation permutation-view slice slice-view column-major-projection
+   column-major-projection-view column-major-projection-flat-view
 
    ;; operations
    
-   xdim= x+ x- x* x/ x= order xsum xprod xmin xmax
+   xdim= x+ x- x* x/ x= order xsum xprod xmin xmax xmap xmap*
    
    ))

@@ -247,70 +247,190 @@ no error checking.  Return nil for dropped dimensions."
 		 (convert-slice-subscripts index-specifications subscripts))
 	  value)))
 
-;;;; row-major-projection
+;;;; !!!! row-major-projection is deprecated and will be removed.  I
+;;;; !!!! am only using column-major projections now, and that
+;;;; !!!! includes a special case too.
+
+;; ;;;; row-major-projection
+;; ;;;;
+;; ;;;; A row-major-projection is a view that maps elements to an
+;; ;;;; xrefable object using a flattened index calculated as if the
+;; ;;;; storage model was row-major.
+
+;; (defgeneric row-major-projection (object &rest dimensions)
+;;   (:documentation "Row major projection to an xrefable object.  Total
+;;   size needs to match the product of dimensions."))
+
+;; ;;;; row-major-projection-view
+;; ;;;;
+;; ;;;; A general, unoptimized case that makes no assumption on the
+;; ;;;; storage model.  If you are projecting onto an array, you might
+;; ;;;; want to use a more specialized class if you are concerned about
+;; ;;;; speed.
+
+;; (defclass row-major-projection-view (view)
+;;   ((dimensions :initarg :dimensions :reader dimensions
+;; 	       :type fixnum-vector
+;; 	       :documentation "dimensions")
+;;    (ancestor-dimensions :initarg :ancestor-dimensions
+;; 			:reader ancestor-dimensions
+;; 			:type (simple-array integer (*))
+;; 			:documentation "dimensions of ancestor")))
+
+;; (defmethod initialize-instance :after ((object row-major-projection-view) &key)
+;;   ;; save ancestor-dimensions
+;;   (with-slots (ancestor ancestor-dimensions) object
+;;     (setf ancestor-dimensions 
+;; 	  (coerce (xdims ancestor) 'fixnum-vector)))
+;;   ;; !!! note: do we want to cache coefficients for calculating rm-index? not now
+;;   object)
+
+;; (defmethod row-major-projection (object &rest dimensions)
+;;   (unless (= (reduce #'* dimensions) (xsize object))
+;;     (error "Size of the object does not match the product of dimensions."))
+;;   (make-instance 'row-major-projection-view 
+;; 		 :ancestor object
+;; 		 :dimensions (coerce dimensions 'fixnum-vector)))
+
+;; (defmethod xrank ((object row-major-projection-view))
+;;   (xrank (ancestor object))) ; !!!! a bug? should be (length dimensions)
+
+;; (defmethod xdims ((object row-major-projection-view))
+;;   (coerce (dimensions object) 'list))
+
+;; (defmethod xdim ((object row-major-projection-view) axis-number)
+;;   (aref (dimensions object) axis-number))
+
+;; (defmethod xsize ((object row-major-projection-view))
+;;   (reduce #'* (dimensions object)))
+
+;; (defmethod xref ((object row-major-projection-view) &rest subscripts)
+;;   (with-slots (ancestor dimensions ancestor-dimensions) object
+;;     (apply #'xref ancestor (rm-subscripts ancestor-dimensions
+;; 					  (rm-index dimensions subscripts)))))
+
+;; (defmethod (setf xref) (value (object row-major-projection-view)
+;; 			&rest subscripts)
+;;   (with-slots (ancestor dimensions ancestor-dimensions) object
+;;     (setf (apply #'xref ancestor (rm-subscripts ancestor-dimensions
+;; 					  (rm-index dimensions subscripts)))
+;; 	  value)))
+
+
+;;;; column-major-projection
 ;;;;
-;;;; A row-major-projection is a view that maps elements to an
+;;;; A column-major-projection is a view that maps elements to an
 ;;;; xrefable object using a flattened index calculated as if the
-;;;; storage model was row-major.
+;;;; storage model was column-major.
 
-(defgeneric row-major-projection (object &rest dimensions)
+(defgeneric column-major-projection (object &rest dimensions)
   (:documentation "Row major projection to an xrefable object.  Total
-  size needs to match the product of dimensions."))
+  size needs to match the product of dimensions.  If dimensions is
+  omitted, it is taken to be the xsize of the object."))
 
-;;;; row-major-projection-view
+;;;; column-major-projection-view
 ;;;;
 ;;;; A general, unoptimized case that makes no assumption on the
-;;;; storage model.  If you are projecting onto an array, you might
-;;;; want to use a more specialized class if you are concerned about
-;;;; speed.
+;;;; storage model.  If you are projecting onto a object with a CM
+;;;; storage model, you might want to use a more specialized class if
+;;;; you are concerned about speed.
 
-(defclass row-major-projection-view (view)
+(defclass column-major-projection-view (view)
   ((dimensions :initarg :dimensions :reader dimensions
-	       :type fixnum-vector
+	       :type list
 	       :documentation "dimensions")
    (ancestor-dimensions :initarg :ancestor-dimensions
 			:reader ancestor-dimensions
-			:type (simple-array integer (*))
+			:type list
 			:documentation "dimensions of ancestor")))
 
-(defmethod initialize-instance :after ((object row-major-projection-view) &key)
-  ;; save ancestor-dimensions
-  (with-slots (ancestor ancestor-dimensions) object
-    (setf ancestor-dimensions 
-	  (coerce (xdims ancestor) 'fixnum-vector)))
-  ;; !!! note: do we want to cache coefficients for calculating rm-index? not now
-  object)
+(defmethod xrank ((object column-major-projection-view))
+  (length (dimensions object)))
 
-(defmethod row-major-projection (object &rest dimensions)
-  (unless (= (reduce #'* dimensions) (xsize object))
-    (error "Size of the object does not match the product of dimensions."))
-  (make-instance 'row-major-projection-view 
-		 :ancestor object
-		 :dimensions (coerce dimensions 'fixnum-vector)))
+(defmethod xdims ((object column-major-projection-view))
+  (copy-list (dimensions object)))
 
-(defmethod xrank ((object row-major-projection-view))
-  (xrank (ancestor object)))
+(defmethod xdim ((object column-major-projection-view) axis-number)
+  (nth (dimensions object) axis-number))
 
-(defmethod xdims ((object row-major-projection-view))
-  (coerce (dimensions object) 'list))
-
-(defmethod xdim ((object row-major-projection-view) axis-number)
-  (aref (dimensions object) axis-number))
-
-(defmethod xsize ((object row-major-projection-view))
+(defmethod xsize ((object column-major-projection-view))
   (reduce #'* (dimensions object)))
 
-(defmethod xref ((object row-major-projection-view) &rest subscripts)
+(defmethod xref ((object column-major-projection-view) &rest subscripts)
   (with-slots (ancestor dimensions ancestor-dimensions) object
-    (apply #'xref ancestor (rm-subscripts ancestor-dimensions
-					  (rm-index dimensions subscripts)))))
+    (apply #'xref ancestor (cm-subscripts ancestor-dimensions
+					  (cm-index dimensions subscripts)))))
 
-(defmethod (setf xref) (value (object row-major-projection-view)
+(defmethod (setf xref) (value (object column-major-projection-view)
 			&rest subscripts)
   (with-slots (ancestor dimensions ancestor-dimensions) object
-    (setf (apply #'xref ancestor (rm-subscripts ancestor-dimensions
-					  (rm-index dimensions subscripts)))
+    (setf (apply #'xref ancestor (cm-subscripts ancestor-dimensions
+					  (cm-index dimensions subscripts)))
 	  value)))
+
+
+;;;; column-major-projection-flat-view
+;;;;
+;;;; A special case projecting onto a flat vector.
+
+(defclass column-major-projection-flat-view (view)
+  ((xsize :initarg :xsize :reader xsize :type fixnum :documentation "total size")
+   (ancestor-dimensions :initarg :ancestor-dimensions
+			:reader ancestor-dimensions
+			:type list
+			:documentation "dimensions of ancestor")))
+
+(defmethod xrank ((object column-major-projection-flat-view))
+  1)
+
+(defmethod xdims ((object column-major-projection-flat-view))
+  (list (xsize object)))
+
+(defmethod xdim ((object column-major-projection-flat-view) axis-number)
+  (if (zerop axis-number)
+      (xsize object)
+      (error 'xdim-invalid-axis-number)))
+
+;;; xsize is a reader
+
+(defmethod xref ((object column-major-projection-flat-view) &rest subscripts)
+  (when (cdr subscripts)
+    (error 'xref-wrong-number-of-subscripts))
+  (let ((index (car subscripts)))
+    ;;    (assert (within-dimension-p index (xsize object)))
+    (with-slots (ancestor dimensions ancestor-dimensions) object
+      (apply #'xref ancestor (cm-subscripts ancestor-dimensions index)))))
+
+(defmethod (setf xref) (value (object column-major-projection-flat-view)
+			&rest subscripts)
+  (when (cdr subscripts)
+    (error 'xref-wrong-number-of-subscripts))
+  (let ((index (car subscripts)))
+    ;;    (assert (within-dimension-p index (xsize object)))
+    (with-slots (ancestor dimensions ancestor-dimensions) object
+      (setf (apply #'xref ancestor (cm-subscripts ancestor-dimensions index))
+            value))))
+
+
+;;;; column-major-projection will choose the optimized case if there
+;;;; are no dimensions given, or for a single dimension.
+
+(defmethod column-major-projection (object &rest dimensions)
+  (let ((xsize (xsize object)))
+    (unless (or (null dimensions) (= (reduce #'* dimensions) xsize))
+      (error "Size of the object does not match the product of dimensions."))
+    (if (or (null dimensions) (equal dimensions (list xsize)))
+        ;; flat
+        (make-instance 'column-major-projection-flat-view 
+                       :ancestor object
+                       :ancestor-dimensions (xdims object)
+                       :xsize xsize)
+        ;; non-flat
+        (make-instance 'column-major-projection-view 
+                       :ancestor object
+                       :ancestor-dimensions (xdims object)
+                       :dimensions dimensions))))
+
 
 ;;;; flat-view
 ;;;;
@@ -325,6 +445,11 @@ no error checking.  Return nil for dropped dimensions."
 ;;;; has to implement reading elements, not setting them, (2) it has
 ;;;; to implement ancestor-subscripts, which map the flat index to
 ;;;; that of the ancestor.
+;;;;
+;;;; NOTE: flat-views do NOT have to be compatible across classes!  Eg
+;;;; for Lisp arrays a flat-view could be row-major, while for some
+;;;; other object it could be column major, etc.  Only use FLAT VIEWs
+;;;; if you truly don't care about the order.
 
 (defgeneric flat (object)
   (:documentation "Flat index for an object."))

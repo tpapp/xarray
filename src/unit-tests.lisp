@@ -38,6 +38,17 @@ Knuth (aka Fisher-Yates) shuffle."
                (aref vector (1- i))))
     vector))
 
+(defun random-array (dimensions &key 
+                     (element-type 'fixnum)
+                     (function (lambda () 
+                       (random (coerce 10 element-type)))))
+  "Fill array with results from function, called for each element."
+  (let ((array (make-array dimensions :element-type element-type)))
+    (dotimes (i (array-total-size array))
+      (setf (row-major-aref array i) (funcall function)))
+    array))
+                                                                                       )))
+
 (defun integer-vector (n)
   "A vector of n integers from 0."
   (fill-array-with-integers! (make-array n :element-type 'fixnum)))
@@ -78,6 +89,10 @@ Knuth (aka Fisher-Yates) shuffle."
   :equality-test #'equalp
   :dynamic-variables (*a* (fill-array-with-integers! (make-array '(4 5)))))
 
+;;; *a* is available for interactive testing
+
+(defparameter *a* (fill-array-with-integers! (make-array '(4 5))))
+
 (addtest (xarray)
   indexing
   (ensure (test-rm-index #(9 2 1 2 3 4 5)))
@@ -113,10 +128,17 @@ Knuth (aka Fisher-Yates) shuffle."
   (ensure-same (take (slice *a* '(2 3) '(-2 -1)) 'array)
 	       #2A((13 14) (18 19))))
 
+;; (addtest (xarray)
+;;   row-major-projection
+;;   (ensure-same (take (column-major-projection *a* 2 10) 'array)
+;; 	       #2A((0 1 2 3 4 5 6 7 8 9) (10 11 12 13 14 15 16 17 18 19))))
+
 (addtest (xarray)
-  row-major-projection
-  (ensure-same (take (row-major-projection *a* 2 10) 'array)
-	       #2A((0 1 2 3 4 5 6 7 8 9) (10 11 12 13 14 15 16 17 18 19))))
+  column-major-projection
+  (ensure-same (take (column-major-projection *a* 2 10) 'array)
+               #2A((0 10 1 11 2 12 3 13 4 14) (5 15 6 16 7 17 8 18 9 19)))
+  (ensure-same (take (column-major-projection *a*) 'array)
+               #(0 5 10 15 1 6 11 16 2 7 12 17 3 8 13 18 4 9 14 19)))
 
 (addtest (xarray)
   flat-reduction
@@ -152,4 +174,26 @@ Knuth (aka Fisher-Yates) shuffle."
   (ensure-same (integer-vector 5) (sort-using-order (random-permutation 5)))
   (ensure-same (integer-vector 129) (sort-using-order (random-permutation 129)) :test #'equalp))
 
-(run-tests :suite 'xarray)
+(defun xmap-test (dims function nargs)
+  (let* ((args (iter
+                 (repeat nargs)
+                 (collecting (random-array dims))))
+         (result (apply #'xmap (make-array dims)
+                        function args)))
+    (iter
+      (for i :from 0 :below (array-total-size result))
+      (always (= (row-major-aref result i)
+                 (apply function (mapcar (lambda (arg)
+                                           (row-major-aref arg i))
+                                         args)))))))
+                                   
+(addtest (xarray)
+  xmap
+  (ensure (xmap-test '(4 5 9) #'+ 5))
+  (ensure (xmap-test '11 #'- 3))
+  (ensure (xmap-test '(7 3) #'cos 1))
+  (ensure (xmap-test '(119 7 13) #'exp 1)))
+  
+  
+
+; (run-tests :suite 'xarray)
