@@ -24,8 +24,9 @@
 
    ;; view
 
-   view permutation permutation-view slice slice-view column-major-projection
-   column-major-projection-view column-major-projection-flat-view
+   view permutation permutation-view slice slice-view drop
+   column-major-projection column-major-projection-view
+   column-major-projection-flat-view
 
    ;; operations
    

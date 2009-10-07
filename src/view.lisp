@@ -247,6 +247,17 @@ no error checking.  Return nil for dropped dimensions."
 		 (convert-slice-subscripts index-specifications subscripts))
 	  value)))
 
+;;;; drop dimensions of 1
+
+(defun drop (object)
+  "Return a view with the unit dimensions dropped."
+  (apply #'slice object (mapcar (lambda (d)
+                                  (cond
+                                    ((< d 1) (error "don't know how to drop zero dimensions"))
+                                    ((= 1 d) 0)
+                                    (t :all)))
+                                (xdims object))))
+
 ;;;; !!!! row-major-projection is deprecated and will be removed.  I
 ;;;; !!!! am only using column-major projections now, and that
 ;;;; !!!! includes a special case too.

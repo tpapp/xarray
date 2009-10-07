@@ -165,3 +165,7 @@ for early returns, etc.  See code for variable names."
                                                              (xref flat-arg i))
                                                            flat-arguments))))
       target)))
+
+;;;; Generalized outer product.
+
+(defun xop (

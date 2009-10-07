@@ -124,6 +124,12 @@ Knuth (aka Fisher-Yates) shuffle."
 		   (19 18 17 16 15))))
 
 (addtest (xarray)
+  drop
+  (ensure-same (take (drop (fill-array-with-integers! (make-array '(1 4 1 5 1 1))))
+                     'array)
+               #2A((0 1 2 3 4) (5 6 7 8 9) (10 11 12 13 14) (15 16 17 18 19))))
+
+(addtest (xarray)
   slice-rectangle-negative-index
   (ensure-same (take (slice *a* '(2 3) '(-2 -1)) 'array)
 	       #2A((13 14) (18 19))))

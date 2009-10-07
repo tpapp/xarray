@@ -116,17 +116,17 @@
 (defun xcreate* (class-and-options dimensions)
   (apply #'xcreate (car class-and-options) dimensions (cdr class-and-options)))
 
-(defgeneric take (object class &key function force-copy-p &allow-other-keys)
-  (:method (object (class (eql 'array)) &key function force-copy-p (element-type t))
+(defgeneric take (object class &key force-copy-p &allow-other-keys)
+  (:method (object (class (eql 'array)) &key force-copy-p (element-type t))
     ;; fallback case
      (let ((array (make-array (xdims object) :element-type element-type))
 	  (dimensions (coerce (xdims object) 'fixnum-vector)))
-      (if function
-	  ;; map
+      (if (subtypep (xtype object) element-type)
+	  ;; coerce
 	  (dotimes (i (xsize object))
 	    (setf (row-major-aref array i)
-		  (funcall function 
-			   (apply #'xref object (rm-subscripts dimensions i)))))
+		  (coerce (apply #'xref object (rm-subscripts dimensions i))
+                          element-type)))
 	  ;; no mapping 
 	  (dotimes (i (xsize object))
 	    (setf (row-major-aref array i)
@@ -134,6 +134,5 @@
       array))
   (:documentation "Return an object converted to a given class, with
 other properties (eg element types for arrays) as specified by the
-optional keyword arguments.  If function is non-nil, it is called on
-each element.  The result may share structure with object, unless
+optional keyword arguments.  The result may share structure with object, unless
 force-copy-p."))
