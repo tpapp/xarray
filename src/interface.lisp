@@ -114,12 +114,15 @@
 
 (declaim (inline xcreate*))
 (defun xcreate* (class-and-options dimensions)
-  (apply #'xcreate (car class-and-options) dimensions (cdr class-and-options)))
+  (if (atom class-and-options)
+      (funcall #'xcreate class-and-options dimensions)
+      (apply #'xcreate (car class-and-options) dimensions (cdr class-and-options))))
 
-(defgeneric take (object class &key force-copy-p &allow-other-keys)
-  (:method (object (class (eql 'array)) &key force-copy-p (element-type t))
+(defgeneric take (class object &key force-copy-p &allow-other-keys)
+  (:method ((class (eql 'array)) object &key force-copy-p (element-type t))
     ;; fallback case
-     (let ((array (make-array (xdims object) :element-type element-type))
+    (declare (ignore force-copy-p))
+    (let ((array (make-array (xdims object) :element-type element-type))
 	  (dimensions (coerce (xdims object) 'fixnum-vector)))
       (if (subtypep (xtype object) element-type)
 	  ;; coerce

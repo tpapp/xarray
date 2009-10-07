@@ -30,6 +30,6 @@
 
    ;; operations
    
-   xdim= x+ x- x* x/ x= order xsum xprod xmin xmax xmap
+   xdim= x+ x- x* x/ x= order xsum xprod xmin xmax xmap xop
    
    ))

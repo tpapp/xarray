@@ -58,7 +58,7 @@ Knuth (aka Fisher-Yates) shuffle."
   (shuffle-vector! (integer-vector n)))
 
 (defun sort-using-order (vector)
-  (take (slice vector (order vector #'<)) 'array))
+  (take 'array (slice vector (order vector #'<))))
 
 (defun test-rm-subscripts (dimensions)
   (let ((array (make-array (coerce dimensions 'list))))
@@ -103,7 +103,7 @@ Knuth (aka Fisher-Yates) shuffle."
 
 (addtest (xarray)
   permutation
-  (ensure-same (take (permutation *a* 1 0) 'array)
+  (ensure-same (take 'array (permutation *a* 1 0))
 	       #2A((0 5 10 15)
 		   (1 6 11 16)
 		   (2 7 12 17)
@@ -112,12 +112,12 @@ Knuth (aka Fisher-Yates) shuffle."
 
 (addtest (xarray)
   slice-drop
-  (ensure-same (take (slice *a* 1 :all) 'array)
+  (ensure-same (take 'array (slice *a* 1 :all))
 	       #(5 6 7 8 9)))
 
 (addtest (xarray)
   slice-rev
-  (ensure-same (take (slice *a* :all :rev) 'array)
+  (ensure-same (take 'array (slice *a* :all :rev))
 	       #2A((4 3 2 1 0)
 		   (9 8 7 6 5)
 		   (14 13 12 11 10)
@@ -125,25 +125,25 @@ Knuth (aka Fisher-Yates) shuffle."
 
 (addtest (xarray)
   drop
-  (ensure-same (take (drop (fill-array-with-integers! (make-array '(1 4 1 5 1 1))))
-                     'array)
+  (ensure-same (take 'array
+                     (drop (fill-array-with-integers! (make-array '(1 4 1 5 1 1)))))
                #2A((0 1 2 3 4) (5 6 7 8 9) (10 11 12 13 14) (15 16 17 18 19))))
 
 (addtest (xarray)
   slice-rectangle-negative-index
-  (ensure-same (take (slice *a* '(2 3) '(-2 -1)) 'array)
+  (ensure-same (take 'array (slice *a* '(2 3) '(-2 -1)))
 	       #2A((13 14) (18 19))))
 
 ;; (addtest (xarray)
 ;;   row-major-projection
-;;   (ensure-same (take (column-major-projection *a* 2 10) 'array)
+;;   (ensure-same (take 'array (column-major-projection *a* 2 10))
 ;; 	       #2A((0 1 2 3 4 5 6 7 8 9) (10 11 12 13 14 15 16 17 18 19))))
 
 (addtest (xarray)
   column-major-projection
-  (ensure-same (take (column-major-projection *a* 2 10) 'array)
+  (ensure-same (take 'array (column-major-projection *a* 2 10))
                #2A((0 10 1 11 2 12 3 13 4 14) (5 15 6 16 7 17 8 18 9 19)))
-  (ensure-same (take (column-major-projection *a*) 'array)
+  (ensure-same (take 'array (column-major-projection *a*))
                #(0 5 10 15 1 6 11 16 2 7 12 17 3 8 13 18 4 9 14 19)))
 
 (addtest (xarray)
@@ -199,5 +199,10 @@ Knuth (aka Fisher-Yates) shuffle."
   (ensure (xmap-test '11 #'- 3))
   (ensure (xmap-test '(7 3) #'cos 1))
   (ensure (xmap-test '(119 7 13) #'exp 1)))
+
+(addtest (xarray)
+  xop
+  (ensure-same (xop 'array #'* #(1 2 3) #(4 5 6))
+               #2A((4 5 6) (8 10 12) (12 15 18))))
 
 ; (run-tests :suite 'xarray)

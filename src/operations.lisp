@@ -144,20 +144,14 @@ for early returns, etc.  See code for variable names."
                       (xdims arg) dims)))))
     (let* ((target
             (typecase target-or-spec
-              (symbol
-                 (unless arguments
-                   (error "Can't determine target dimensions without arguments."))
-                 (let ((dims (xdims (car arguments))))
-                   (check-dims dims (cdr arguments))
-                   (xcreate target-or-spec dims)))
-              (list
+              ((or symbol list)
                  (unless arguments
                    (error "Can't determine target dimensions without arguments."))
                  (let ((dims (xdims (car arguments))))
                    (check-dims dims (cdr arguments))
                    (xcreate* target-or-spec dims)))
               (t (check-dims (xdims target-or-spec) arguments)
-                 target)))
+                 target-or-spec)))
            (flat-arguments (mapcar #'column-major-projection arguments))
            (flat-target (column-major-projection target)))
       (dotimes (i (xsize flat-target))
@@ -168,4 +162,18 @@ for early returns, etc.  See code for variable names."
 
 ;;;; Generalized outer product.
 
-(defun xop (
+(defun xop (result-spec function &rest vectors)
+  "Generalized outer product of vectors, using function."
+  (let* ((dims (mapcar (lambda (v)
+                         (bind (((length) (xdims v)))
+                           length))
+                       vectors))
+         (result (xcreate* result-spec dims)))
+    (dotimes (i (reduce #'* dims))
+      (let ((subscripts (cm-subscripts dims i)))
+        (setf (apply #'xref result subscripts)
+              (apply function
+                     (mapcar (lambda (vector subscript)
+                               (xref vector subscript))
+                             vectors subscripts)))))
+    result))
