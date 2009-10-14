@@ -9,7 +9,8 @@
 
    ;; utilities
    
-   rm-index rm-subscripts cm-index cm-subscripts multf maxf minf
+   rm-index rm-subscripts cm-index cm-subscripts
+   ;; multf maxf minf
    
    ;; interface
 
@@ -26,10 +27,10 @@
 
    view permutation permutation-view slice slice-view drop
    column-major-projection column-major-projection-view
-   column-major-projection-flat-view
+   column-major-projection-flat-view flat flat-view
 
    ;; operations
    
-   xdim= x+ x- x* x/ x= order xsum xprod xmin xmax xmap xop
+   xdim= x+ x- x* x/ x= xorder xsum xprod xmin xmax xmap xop
    
    ))

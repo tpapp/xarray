@@ -47,7 +47,6 @@ Knuth (aka Fisher-Yates) shuffle."
     (dotimes (i (array-total-size array))
       (setf (row-major-aref array i) (funcall function)))
     array))
-                                                                                       )))
 
 (defun integer-vector (n)
   "A vector of n integers from 0."
@@ -58,7 +57,7 @@ Knuth (aka Fisher-Yates) shuffle."
   (shuffle-vector! (integer-vector n)))
 
 (defun sort-using-order (vector)
-  (take 'array (slice vector (order vector #'<))))
+  (take 'array (slice vector (xorder vector #'<))))
 
 (defun test-rm-subscripts (dimensions)
   (let ((array (make-array (coerce dimensions 'list))))

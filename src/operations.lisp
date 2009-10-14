@@ -75,7 +75,7 @@ dimensions,, and the sup|A-B| <= eps.")
 	    (return-from x= nil)))))
     t))
 
-(defun order (vector predicate &key key stable-p)
+(defun xorder (vector predicate &key key stable-p)
   "Return a vector of integers starting from 0, representing the
 permutation of elements in vector that would result if sorted
 according to predicate (which you can use in slice, etc).  Key is
