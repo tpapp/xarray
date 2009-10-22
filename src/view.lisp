@@ -21,8 +21,8 @@
 	     :documentation "an underlying object that is accessible with
                              xref")))
 
-(defmethod xtype ((object view))
-  (xtype (ancestor object)))
+(defmethod xelttype ((object view))
+  (xelttype (ancestor object)))
 
 (defmethod print-object ((object view) stream)
   (print-unreadable-object (object stream :type t :identity t)
@@ -133,7 +133,7 @@ All resulting indexes are valid, ie they are integers in
 Range specifications:
 
 Negative integers are interpreted as counted backwards from the right
-edge of the domain, ie i < 0 denotes element dimension+i.
+edge of the domain, ie i < 0 denotes element dimension-i.  The l
 
 Valid index-specification specifications (a and b are integers):
  

@@ -1,7 +1,6 @@
 (in-package :xarray)
 
-(declaim (inline within-dimension-p vector-within-dimension-p 
-		 map-and-convert-function))
+(declaim (inline within-dimension-p vector-within-dimension-p))
 
 ;; functions to check for validity of subscripts and indexes
 
@@ -16,6 +15,14 @@
       (unless (within-dimension-p elt dimension)
 	(return-from vector-within-dimension-p nil))))
   t)
+
+(defun element-conversion-function (source destination)
+  "Return a conversion function that is identity if (subtypep source
+destination), or constructed with coerce otherwise."
+  (if (subtypep source destination)
+      #'identity
+      (lambda (x)
+        (coerce x destination))))
 
 ;;;; conversion functions between row-major indexes and subscripts
 ;;;;

@@ -3,8 +3,11 @@
 ;;;;  Array is the of course the most important of xrefable objects.
 ;;;;  The interface maps to CL functions in a straightforward manner.
 
-(defmethod xtype ((object array))
+(defmethod xelttype ((object array))
   (array-element-type object))
+
+(defmethod xtype ((object array))
+  `(array :element-type ,(array-element-type object)))
 
 (defmethod xrank ((object array))
   (array-rank object))
@@ -23,6 +26,9 @@
 
 (defmethod (setf xref) (value (object array) &rest subscripts)
   (setf (apply #'aref object subscripts) value))
+
+(defmethod xcreate ((class (eql 'array)) dimensions &key (element-type t))
+  (make-array dimensions :element-type element-type))
 
 ;;;;  Convenience functions for vector and array construction.  All
 ;;;;  return simple-arrays of the specified type, the versions with *

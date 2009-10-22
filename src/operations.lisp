@@ -135,6 +135,9 @@ for early returns, etc.  See code for variable names."
 ;;;; xcreate*, using the dimensions of the first argument, or
 ;;;; supplying a target object of the appropriate type.
 
+;;;; ?? xmap could call xmap*, which could be a generic function? for
+;;;; those wanting to speed things up.
+
 (defun xmap (target-or-spec function &rest arguments)
   "Apply function to arguments elementwise, and save the result in target."
   (flet ((check-dims (dims arguments)
@@ -159,6 +162,39 @@ for early returns, etc.  See code for variable names."
                                                              (xref flat-arg i))
                                                            flat-arguments))))
       target)))
+
+(defgeneric take (class object &key force-copy-p &allow-other-keys)
+  (:method (class object &rest options)
+    ;; fallback case: object created by xcreate, copied elementwise
+    (let* ((dims (xdims object))
+           (object-cm (column-major-projection object))
+           (result (apply #'xcreate class dims options))
+           (result-cm (column-major-projection result)))
+      (dotimes (i (xsize object))
+        (setf (xref result-cm i) (xref object-cm i)))
+      result))
+  (:method ((class (eql 'array)) object &key force-copy-p (element-type t))
+    ;; result is an array
+    (declare (ignore force-copy-p))
+    (let ((array (make-array (xdims object) :element-type element-type))
+	  (dimensions (coerce (xdims object) 'fixnum-vector)))
+      (if (subtypep (xelttype object) element-type)
+	  ;; coerce
+	  (dotimes (i (xsize object))
+	    (setf (row-major-aref array i)
+		  (coerce (apply #'xref object (rm-subscripts dimensions i))
+                          element-type)))
+	  ;; no mapping 
+	  (dotimes (i (xsize object))
+	    (setf (row-major-aref array i)
+		  (apply #'xref object (rm-subscripts dimensions i)))))
+      array))
+  (:documentation "Return an object converted to a given class, with
+other properties (eg element types for arrays) as specified by the
+optional keyword arguments.  The result may share structure with object, unless
+force-copy-p."))
+
+
 
 ;;;; Generalized outer product.
 

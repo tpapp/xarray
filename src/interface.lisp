@@ -10,9 +10,11 @@
 ;;;; (setf xref) on that element will signal a condition.
 ;;;;
 ;;;; Objects can have a particular type imposed on elements, which can
-;;;; be queried with xtype.  Elements returned by xref are guaranteed
-;;;; to be a subtype of this type, and (setf xref) needs to be given
-;;;; elements of this subtype.
+;;;; be queried with xelttype.  Elements returned by xref are
+;;;; guaranteed to be a subtype of this type, and (setf xref) needs to
+;;;; be given elements that are a subtype of this.  The type of the
+;;;; whole object (without dimensions!) can be queried with xtype, and
+;;;; the result is accepted by xcreate*.
 ;;;;
 ;;;; Xcreate is a generic way to create xref'able object of a given
 ;;;; type specification.  See the comments there on type
@@ -23,6 +25,13 @@
 ;;;; incorrect type are available. (!!! see notes there)
 
 (defgeneric xtype (object)
+  (:documentation "Return the type of object, in the format accepted
+  by xcreate* (either a single symbol or a list).  Does not contain
+  dimension information. (other than what is implicit in the class).")
+  (:method (object)                     ; default
+    (class-of object)))
+
+(defgeneric xelttype (object)
   (:documentation "Return the type of elements.  If no restriction is
   imposed, return t."))
 
@@ -74,25 +83,28 @@
 ;;;; another.
 
 (defgeneric xsetf (destination source &key map-function)
-  (:method (destination source &key map-function)
+  (:method (destination source &key 
+                        (map-function
+                         (element-conversion-function (xelttype source)
+                                                      (xelttype destination))))
     (unless (equalp (xdims source) (xdims destination))
       (error "source and destination do not have conforming dimensions"))
-    (let ((dimensions (xdims source))
-	  (map-function (map-and-convert-function map-function
-						  (xtype source)
-						  (xtype destination) t)))
-      (if map-function
+    (let ((dimensions (xdims source)))
+      (if (and map-function (not (eq map-function #'identity)))
+          ;; map-function is not given or identity, don't apply
 	  (dotimes (i (xsize source))
 	    (let ((subscripts (cm-subscripts dimensions i)))
 	      (setf (apply #'xref destination subscripts)
-		    (funcall map-function (apply #'xref source subscripts)))))
+		    (apply #'xref source subscripts))))
+          ;; use map-function
 	  (dotimes (i (xsize source))
 	    (let ((subscripts (cm-subscripts dimensions i)))
 	      (setf (apply #'xref destination subscripts)
-		    (apply #'xref source subscripts))))))
+		    (funcall map-function (apply #'xref source subscripts)))))))
     destination)
-  (:documentation "Copy the elements of source to destination, with
-  the usual semantics for map-function and type conversion"))
+  (:documentation "Copy the elements of source to destination.
+Map-function, if given, will be used to map the elements, the default
+is conversion (if necessary) with coerce."))
 
 ;;;; XCREATE is a generic way of creating objects, takes a type (a
 ;;;; symbol, not a list!), dimensions (a list), and additional other
@@ -101,8 +113,8 @@
 ;;;; These specifications are useful for functions that return
 ;;;; xref'able objects (eg take, xmap).  They should be given as a
 ;;;; list (class &key ...), eg '(array :element-type double-float).
-;;;; All conforming types should define a method for xcreate.
-;;;; xcreate* can be used as a shorthand for destructuring the type
+;;;; All conforming types should define a method for XCREATE.
+;;;; XCREATE* can be used as a shorthand for destructuring the type
 ;;;; specifiers (sans dimension).  All methods should accept scalars
 ;;;; as DIMENSIONS, in which case they denote a vector.
 
@@ -110,9 +122,10 @@
   (:method ((class (eql 'array)) dimensions &key (element-type t))
     (make-array dimensions :element-type element-type))
   (:documentation "Return a new object of given type and dimensions,
-  with additional options."))
+  with additional options.  Dimensions can be a list, or a single
+  number."))
 
-(declaim (inline xcreate*))
+(declaim (inline xcreate))
 (defun xcreate* (class-and-options dimensions)
   (if (atom class-and-options)
       (funcall #'xcreate class-and-options dimensions)
@@ -124,7 +137,7 @@
     (declare (ignore force-copy-p))
     (let ((array (make-array (xdims object) :element-type element-type))
 	  (dimensions (coerce (xdims object) 'fixnum-vector)))
-      (if (subtypep (xtype object) element-type)
+      (if (subtypep (xelttype object) element-type)
 	  ;; coerce
 	  (dotimes (i (xsize object))
 	    (setf (row-major-aref array i)
