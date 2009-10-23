@@ -92,6 +92,9 @@ passed to sort.  If stable-p, stable-sort is used."
                       #'car))
     (map 'fixnum-vector #'cdr work)))
 
+
+;;; !!! all of these should accept keyword operations -- Tamas
+
 (defmacro define-flat-reduction (name modify-macro docstring &body body)
   "Define a generic function named NAME which reduces its argument
 elementwise.  body is spliced into the iterate loop, and can be used
@@ -126,6 +129,8 @@ for early returns, etc.  See code for variable names."
   (when (zerop result) (return)))
 (define-flat-reduction xmax maxf "Maximum of the elements.")
 (define-flat-reduction xmin minf "Minimum of the elements.")
+(defun xmean (a) "Mean of the elements."
+  (/ (xsum a) (xsize a)))
 
 ;;;; Instead of defining x... operator names for every function on
 ;;;; earth, we provide some generic mapping constructs.
@@ -135,10 +140,10 @@ for early returns, etc.  See code for variable names."
 ;;;; xcreate*, using the dimensions of the first argument, or
 ;;;; supplying a target object of the appropriate type.
 
-;;;; ?? xmap could call xmap*, which could be a generic function? for
-;;;; those wanting to speed things up.
+;;;; ?? xmap could call xmap%, which could be a generic function
+;;;; specializing on class. for those wanting to speed things up.
 
-(defun xmap (target-or-spec function &rest arguments)
+(defun xmap (target function &rest arguments)
   "Apply function to arguments elementwise, and save the result in target."
   (flet ((check-dims (dims arguments)
            (dolist (arg arguments)
@@ -146,15 +151,16 @@ for early returns, etc.  See code for variable names."
                (error "Dimensions ~a are incompatible with target dimension ~a."
                       (xdims arg) dims)))))
     (let* ((target
-            (typecase target-or-spec
+            (typecase target
               ((or symbol list)
                  (unless arguments
                    (error "Can't determine target dimensions without arguments."))
-                 (let ((dims (xdims (car arguments))))
+                 (let ((dims (xdims (car arguments)))
+                       (target (mklist target)))
                    (check-dims dims (cdr arguments))
-                   (xcreate* target-or-spec dims)))
-              (t (check-dims (xdims target-or-spec) arguments)
-                 target-or-spec)))
+                   (xcreate (car target) dims (cdr target))))
+              (t (check-dims (xdims target) arguments)
+                 target)))
            (flat-arguments (mapcar #'column-major-projection arguments))
            (flat-target (column-major-projection target)))
       (dotimes (i (xsize flat-target))
@@ -162,39 +168,6 @@ for early returns, etc.  See code for variable names."
                                                              (xref flat-arg i))
                                                            flat-arguments))))
       target)))
-
-(defgeneric take (class object &key force-copy-p &allow-other-keys)
-  (:method (class object &rest options)
-    ;; fallback case: object created by xcreate, copied elementwise
-    (let* ((dims (xdims object))
-           (object-cm (column-major-projection object))
-           (result (apply #'xcreate class dims options))
-           (result-cm (column-major-projection result)))
-      (dotimes (i (xsize object))
-        (setf (xref result-cm i) (xref object-cm i)))
-      result))
-  (:method ((class (eql 'array)) object &key force-copy-p (element-type t))
-    ;; result is an array
-    (declare (ignore force-copy-p))
-    (let ((array (make-array (xdims object) :element-type element-type))
-	  (dimensions (coerce (xdims object) 'fixnum-vector)))
-      (if (subtypep (xelttype object) element-type)
-	  ;; coerce
-	  (dotimes (i (xsize object))
-	    (setf (row-major-aref array i)
-		  (coerce (apply #'xref object (rm-subscripts dimensions i))
-                          element-type)))
-	  ;; no mapping 
-	  (dotimes (i (xsize object))
-	    (setf (row-major-aref array i)
-		  (apply #'xref object (rm-subscripts dimensions i)))))
-      array))
-  (:documentation "Return an object converted to a given class, with
-other properties (eg element types for arrays) as specified by the
-optional keyword arguments.  The result may share structure with object, unless
-force-copy-p."))
-
-
 
 ;;;; Generalized outer product.
 
@@ -204,7 +177,8 @@ force-copy-p."))
                          (bind (((length) (xdims v)))
                            length))
                        vectors))
-         (result (xcreate* result-spec dims)))
+         (result-spec (mklist result-spec))
+         (result (xcreate (car result-spec) dims (cdr result-spec))))
     (dotimes (i (reduce #'* dims))
       (let ((subscripts (cm-subscripts dims i)))
         (setf (apply #'xref result subscripts)

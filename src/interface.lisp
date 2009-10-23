@@ -3,6 +3,13 @@
 ;;;; General interface for objects accessible with xref (objects like
 ;;;; this are called xrefable).
 ;;;;
+;;;; We distinguish two levels of the interface: the basic (element
+;;;; access, dimension information) and the extended (type
+;;;; information, creation of similar objects).
+
+
+;;;; Basic interface
+;;;;
 ;;;; Objects accessible with xref are array-like objects, where
 ;;;; elements are indexed with (xrank object) subscripts, each ranging
 ;;;; from 0 to (1- (xdim object dimension)), inclusive.  Not all
@@ -12,13 +19,7 @@
 ;;;; Objects can have a particular type imposed on elements, which can
 ;;;; be queried with xelttype.  Elements returned by xref are
 ;;;; guaranteed to be a subtype of this type, and (setf xref) needs to
-;;;; be given elements that are a subtype of this.  The type of the
-;;;; whole object (without dimensions!) can be queried with xtype, and
-;;;; the result is accepted by xcreate*.
-;;;;
-;;;; Xcreate is a generic way to create xref'able object of a given
-;;;; type specification.  See the comments there on type
-;;;; specifications.
+;;;; be given elements that are a subtype of this.
 ;;;; 
 ;;;; Conditions for the wrong number of subscripts, subscripts being
 ;;;; out of bounds, or writing non-writable elements or elements with
@@ -81,6 +82,8 @@
 
 ;;;; xsetf allow to set elements of an xrefable object to those of
 ;;;; another.
+;;;;
+;;;; ??? should we lose the function? -- Tamas
 
 (defgeneric xsetf (destination source &key map-function)
   (:method (destination source &key 
@@ -106,49 +109,52 @@
 Map-function, if given, will be used to map the elements, the default
 is conversion (if necessary) with coerce."))
 
-;;;; XCREATE is a generic way of creating objects, takes a type (a
-;;;; symbol, not a list!), dimensions (a list), and additional other
-;;;; keyword arguments.
-;;;;
-;;;; These specifications are useful for functions that return
-;;;; xref'able objects (eg take, xmap).  They should be given as a
-;;;; list (class &key ...), eg '(array :element-type double-float).
-;;;; All conforming types should define a method for XCREATE.
-;;;; XCREATE* can be used as a shorthand for destructuring the type
-;;;; specifiers (sans dimension).  All methods should accept scalars
-;;;; as DIMENSIONS, in which case they denote a vector.
 
-(defgeneric xcreate (class dimensions &key &allow-other-keys)
-  (:method ((class (eql 'array)) dimensions &key (element-type t))
-    (make-array dimensions :element-type element-type))
+;;;;  An object is characterized by its CLASS (a symbol), various
+;;;;  class-specific OPTIONS (a list of keyword-value pairs, can be
+;;;;  empty, all should have reasonable defaults so that they are
+;;;;  optional) and the dimensions.
+;;;;
+;;;;  XTYPE will return (CONS CLASS OPTIONS).  TAKE and XCREATE are
+;;;;  object conversion/creation methods that specialize on class, and
+;;;;  are also given OPTIONS.  The XSIMILAR method should return
+;;;;  (CONS CLASS OPTIONS) for creating a "similar" object with
+;;;;  given dimensions, where "similarity" is of course something
+;;;;  object specific, and designed to be a convenient default.  TAKE*
+;;;;  and XMAP* use information returned by XSIMILAR.
+;;;;
+;;;;  Dimensions should always be a list.
+
+
+(defgeneric xtype (object)
+  (:documentation "Return (cons class options)."))
+
+(defgeneric xcreate (class dimensions &optional options)
   (:documentation "Return a new object of given type and dimensions,
   with additional options.  Dimensions can be a list, or a single
   number."))
 
-(declaim (inline xcreate))
-(defun xcreate* (class-and-options dimensions)
-  (if (atom class-and-options)
-      (funcall #'xcreate class-and-options dimensions)
-      (apply #'xcreate (car class-and-options) dimensions (cdr class-and-options))))
+(defgeneric xsimilar (object new-dimensions)
+  (:documentation "Return (cons class options) for creating a similar
+  object with new dimensions."))
 
-(defgeneric take (class object &key force-copy-p &allow-other-keys)
-  (:method ((class (eql 'array)) object &key force-copy-p (element-type t))
-    ;; fallback case
+(defgeneric take (class object &key force-copy-p options)
+  (:method (class object &key force-copy-p options)
+    ;; fallback case: object created by xcreate, copied elementwise
     (declare (ignore force-copy-p))
-    (let ((array (make-array (xdims object) :element-type element-type))
-	  (dimensions (coerce (xdims object) 'fixnum-vector)))
-      (if (subtypep (xelttype object) element-type)
-	  ;; coerce
-	  (dotimes (i (xsize object))
-	    (setf (row-major-aref array i)
-		  (coerce (apply #'xref object (rm-subscripts dimensions i))
-                          element-type)))
-	  ;; no mapping 
-	  (dotimes (i (xsize object))
-	    (setf (row-major-aref array i)
-		  (apply #'xref object (rm-subscripts dimensions i)))))
-      array))
+    (let* ((dims (xdims object))
+           (object-cm (column-major-projection object))
+           (result (apply #'xcreate class dims options))
+           (result-cm (column-major-projection result)))
+      (dotimes (i (xsize object))
+        (setf (xref result-cm i) (xref object-cm i)))
+      result))
   (:documentation "Return an object converted to a given class, with
 other properties (eg element types for arrays) as specified by the
 optional keyword arguments.  The result may share structure with object, unless
 force-copy-p."))
+
+(defun take* (object &optional force-copy-p)
+  "Take an object using type information from xsimilar."
+  (let ((type (xsimilar object (xdims object))))
+    (take (car type) object :force-copy-p force-copy-p :options (cdr type))))

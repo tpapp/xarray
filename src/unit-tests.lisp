@@ -133,6 +133,10 @@ Knuth (aka Fisher-Yates) shuffle."
   (ensure-same (take 'array (slice *a* '(2 3) '(-2 -1)))
 	       #2A((13 14) (18 19))))
 
+(addtest (xarray)
+  (ensure-same (take* (slice *a* 1 :all))
+               #(5 6 7 8 9)))
+
 ;; (addtest (xarray)
 ;;   row-major-projection
 ;;   (ensure-same (take 'array (column-major-projection *a* 2 10))

@@ -6,9 +6,6 @@
 (defmethod xelttype ((object array))
   (array-element-type object))
 
-(defmethod xtype ((object array))
-  `(array :element-type ,(array-element-type object)))
-
 (defmethod xrank ((object array))
   (array-rank object))
 
@@ -27,8 +24,35 @@
 (defmethod (setf xref) (value (object array) &rest subscripts)
   (setf (apply #'aref object subscripts) value))
 
-(defmethod xcreate ((class (eql 'array)) dimensions &key (element-type t))
-  (make-array dimensions :element-type element-type))
+;;; Extended interface
+
+(defmethod xtype ((object array))
+  `(array :element-type ,(array-element-type object)))
+
+(defmethod xcreate ((class (eql 'array)) dimensions &optional options)
+    (bind (((&key (element-type t)) options))
+      (make-array dimensions :element-type element-type)))
+
+(defmethod xsimilar ((object array) new-dimensions)
+  (declare (ignore new-dimensions))
+  (xtype object))
+
+(defmethod take ((class (eql 'array)) object &key force-copy-p options)
+  (declare (ignore force-copy-p))
+  (bind (((&key (element-type t)) options)
+         (array (make-array (xdims object) :element-type element-type))
+         (dimensions (coerce (xdims object) 'fixnum-vector)))
+    (if (subtypep (xelttype object) element-type)
+        ;; coerce
+        (dotimes (i (xsize object))
+          (setf (row-major-aref array i)
+                (coerce (apply #'xref object (rm-subscripts dimensions i))
+                        element-type)))
+        ;; no mapping 
+        (dotimes (i (xsize object))
+          (setf (row-major-aref array i)
+                (apply #'xref object (rm-subscripts dimensions i)))))
+    array))
 
 ;;;;  Convenience functions for vector and array construction.  All
 ;;;;  return simple-arrays of the specified type, the versions with *

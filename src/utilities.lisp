@@ -201,3 +201,10 @@ not checked, results are not defined for invalid permutations)."
 		     "Replace with smallest of the place and the given values.")
 
 (define-modify-macro multf (&rest values) * "Multiply (& set) the first argument by the rest.")
+
+;;;; 
+;;;;  Utility functions
+;;;;
+
+(defun mklist (obj)
+  (if (listp obj) obj (list obj)))
