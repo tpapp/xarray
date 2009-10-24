@@ -132,11 +132,17 @@ is conversion (if necessary) with coerce."))
 (defgeneric xcreate (class dimensions &optional options)
   (:documentation "Return a new object of given type and dimensions,
   with additional options.  Dimensions can be a list, or a single
-  number."))
+  number.  xcreate can also be called as
+  (xcreate (cons class options) dimensions), in which case it will
+  split the cons and call xcreate again.")
+  (:method ((class list) dimensions &optional options)
+    ;; 
+    (assert (null options))
+    (xcreate (car class) dimensions (cdr class))))
 
-(defgeneric xsimilar (object new-dimensions)
+(defgeneric xsimilar (object rank)
   (:documentation "Return (cons class options) for creating a similar
-  object with new dimensions."))
+  object with new rank."))
 
 (defgeneric take (class object &key force-copy-p options)
   (:method (class object &key force-copy-p options)
@@ -149,12 +155,18 @@ is conversion (if necessary) with coerce."))
       (dotimes (i (xsize object))
         (setf (xref result-cm i) (xref object-cm i)))
       result))
+  (:method ((class list) object &key force-copy-p options)
+    ;; 
+    (assert (null options))
+    (take (car class) object :force-copy-p force-copy-p
+          :options (cdr class)))
   (:documentation "Return an object converted to a given class, with
 other properties (eg element types for arrays) as specified by the
-optional keyword arguments.  The result may share structure with object, unless
-force-copy-p."))
+optional keyword arguments.  The result may share structure with
+object, unless force-copy-p.  Similarly to xcreate, class can be (cons
+class options)."))
 
 (defun take* (object &optional force-copy-p)
   "Take an object using type information from xsimilar."
-  (let ((type (xsimilar object (xdims object))))
+  (let ((type (xsimilar object (xrank object))))
     (take (car type) object :force-copy-p force-copy-p :options (cdr type))))

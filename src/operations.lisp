@@ -169,8 +169,6 @@ for early returns, etc.  See code for variable names."
                                                            flat-arguments))))
       target)))
 
-;;;; Generalized outer product.
-
 (defun xop (result-spec function &rest vectors)
   "Generalized outer product of vectors, using function."
   (let* ((dims (mapcar (lambda (v)
@@ -187,3 +185,25 @@ for early returns, etc.  See code for variable names."
                                (xref vector subscript))
                              vectors subscripts)))))
     result))
+
+(defun xcollect (n function &optional target-spec)
+  "Collect the result of calling function n times into an array (type
+  of target-spec, or determined using xsimilar).  Indexing is (i ...),
+  where i is from 0 to n-1.  The rest of the indexes are determined
+  from the first value."
+  (let* ((first (funcall function))
+         (dims (cons n (xdims first)))
+         (target (xcreate (if target-spec
+                              target-spec
+                              (xsimilar first (length dims))) dims))
+         (mask (make-sequence 'list (xrank first) :initial-element :all)))
+    ;; first element
+    (xsetf (apply #'slice target 0 mask)
+           first)
+    ;; rest
+    (iter
+      (for i :from 1 :below n)
+      (xsetf (apply #'slice target i mask)
+             (funcall function)))
+    ;; value
+    target))

@@ -208,4 +208,13 @@ Knuth (aka Fisher-Yates) shuffle."
   (ensure-same (xop 'array #'* #(1 2 3) #(4 5 6))
                #2A((4 5 6) (8 10 12) (12 15 18))))
 
+(addtest (xarray)
+  xcollect
+  (let ((counter 0))
+    (ensure-same
+     (xcollect 5 (lambda ()
+                   (vector (incf counter) (incf counter))))
+     #2A((1 2) (3 4) (5 6) (7 8) (9 10))
+     :test #'x=)))
+
 ; (run-tests :suite 'xarray)

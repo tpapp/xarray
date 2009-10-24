@@ -33,8 +33,8 @@
     (bind (((&key (element-type t)) options))
       (make-array dimensions :element-type element-type)))
 
-(defmethod xsimilar ((object array) new-dimensions)
-  (declare (ignore new-dimensions))
+(defmethod xsimilar ((object array) rank)
+  (declare (ignore rank))
   (xtype object))
 
 (defmethod take ((class (eql 'array)) object &key force-copy-p options)
