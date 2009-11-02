@@ -16,8 +16,8 @@
 
    xelttype xrank xdims xdims* xdim xsize xref-subscript-out-of-bounds
    xref-wrong-number-of-subscripts xref-setting-readonly
-   xref-incompatible-type xdim-invalid-axis-number xref xtype xcreate
-   xsimilar take take*
+   xref-incompatible-type xdim-invalid-axis-number xsetf xref xtype
+   xcreate xsimilar take take*
 
    ;; array
 
