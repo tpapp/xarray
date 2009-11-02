@@ -32,6 +32,16 @@
     ;; TAKEing the easy way out, need to write this decently one day
     (print (take 'array object) stream)))
 
+(defun original-ancestor (view)
+  "Find the original ancestor (ie the one that is not a view).  Simply
+returns objects which are not views."
+  (tagbody
+     top
+     (when (typep view 'view)
+       (setf view (ancestor view))
+       (go top)))
+  view)
+
 ;;;; permutations
 ;;;;
 ;;;; Permutations interchange the dimension indexes.

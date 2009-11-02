@@ -40,5 +40,6 @@
     :components
     ((:file "array")
      (:file "view")
-     (:file "operations"))))
+     (:file "operations")
+     (:file "sequences"))))
   :depends-on (:cl-utilities :iterate :metabang-bind))

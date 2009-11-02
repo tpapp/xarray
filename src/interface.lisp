@@ -144,13 +144,17 @@ is conversion (if necessary) with coerce."))
   (:documentation "Return (cons class options) for creating a similar
   object with new rank."))
 
+;;;; xsimilar should be redesigned, it doesn't need to take objects
+;;;; directly, should be called as (xsimilar class options rank)
+;;;; instead.
+
 (defgeneric take (class object &key force-copy-p options)
   (:method (class object &key force-copy-p options)
     ;; fallback case: object created by xcreate, copied elementwise
     (declare (ignore force-copy-p))
     (let* ((dims (xdims object))
            (object-cm (column-major-projection object))
-           (result (apply #'xcreate class dims options))
+           (result (funcall #'xcreate class dims options))
            (result-cm (column-major-projection result)))
       (dotimes (i (xsize object))
         (setf (xref result-cm i) (xref object-cm i)))

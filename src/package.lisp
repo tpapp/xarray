@@ -25,13 +25,18 @@
 
    ;; view
 
-   view permutation permutation-view slice slice-view drop
-   column-major-projection column-major-projection-view
-   column-major-projection-flat-view flat flat-view
+   view original-ancestor permutation permutation-view slice
+   slice-view drop column-major-projection
+   column-major-projection-view column-major-projection-flat-view flat
+   flat-view
 
    ;; operations
    
    xdim= x+ x- x* x/ x= xorder xsum xprod xmin xmax xmean xmap xmap* xop
    xcollect
+
+   ;; sequences
+
+   int-seq
    
    ))
