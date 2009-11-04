@@ -20,35 +20,40 @@
   "Return non-nil iff the dimensions of A and B are the same."
   (equal (xdims a) (xdims b)))
 
-(defmacro define-elementwise-operation (operation &optional (name (make-symbol* "X")))
-  `(defgeneric ,name (a b &optional result-type)
-     (:documentation "The elementwise sum of two conformable arrays, or an array and a scalar.")
-     (:method (a b &optional (result-type 'number))
+(defmacro define-elementwise-operation (operation &optional 
+                                        (documentation (format nil "Elementwise
+                                        ~A of two arrays, or an array and a scalar." operation))
+                                        (name (make-symbol* "X" operation)))
+  "Defines an elementwise operation, with some default methods that return arrays."
+  (check-type documentation string)
+  `(defgeneric ,name (a b &key &allow-other-keys)
+     (:documentation ,documentation)
+     (:method (a b &key (element-type t))
        ;; default: both A and B are arrays
        (assert (xdims= a b))
        (let* ((dims (xdims a))
-	      (result (make-array dims :element-type result-type))
-	      (dims-vec (coerce dims 'fixnum-vector)))
-	 (dotimes (i (xsize a))
+	      (result (make-array dims :element-type element-type))
+              (dims-vec (coerce dims 'fixnum-vector)))
+         (dotimes (i (xsize a))
 	   (let ((subscripts (rm-subscripts dims-vec i)))
 	     (setf (row-major-aref result i)
 		   (,operation (apply #'xref a subscripts) (apply #'xref b subscripts)))))
 	 result))
-     (:method (a (b number) &optional (result-type 'number))
+     (:method (a (b number) &key (element-type t))
        ;; B is a scalar
        (let* ((dims (xdims a))
-	      (result (make-array dims :element-type result-type))
+	      (result (make-array dims :element-type element-type))
 	      (dims-vec (coerce dims 'fixnum-vector)))
 	 (dotimes (i (xsize a))
 	   (let ((subscripts (rm-subscripts dims-vec i)))
 	     (setf (row-major-aref result i)
 		   (,operation (apply #'xref a subscripts) b))))
 	 result))
-     (:method ((a number) b &optional (result-type 'number))
+     (:method ((a number) b &key (element-type t))
        ;; A is a scalar (I wish I could just call the method with B
        ;; and A, but would not work for - and /).
        (let* ((dims (xdims b))
-	      (result (make-array dims :element-type result-type))
+	      (result (make-array dims :element-type element-type))
 	      (dims-vec (coerce dims 'vector)))
 	 (dotimes (i (xsize b))
 	   (let ((subscripts (rm-subscripts dims-vec i)))

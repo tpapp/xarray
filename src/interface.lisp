@@ -25,13 +25,6 @@
 ;;;; out of bounds, or writing non-writable elements or elements with
 ;;;; incorrect type are available. (!!! see notes there)
 
-(defgeneric xtype (object)
-  (:documentation "Return the type of object, in the format accepted
-  by xcreate* (either a single symbol or a list).  Does not contain
-  dimension information. (other than what is implicit in the class).")
-  (:method (object)                     ; default
-    (class-of object)))
-
 (defgeneric xelttype (object)
   (:documentation "Return the type of elements.  If no restriction is
   imposed, return t."))

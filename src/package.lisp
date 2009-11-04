@@ -38,5 +38,7 @@
    ;; sequences
 
    int-seq
+
+   ;; atoms -- NOTHING NEEDS TO BE EXPORTED
    
    ))

@@ -41,5 +41,6 @@
     ((:file "array")
      (:file "view")
      (:file "operations")
-     (:file "sequences"))))
+     (:file "sequences")
+     (:file "atoms"))))
   :depends-on (:cl-utilities :iterate :metabang-bind))

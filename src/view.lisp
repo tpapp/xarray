@@ -378,7 +378,7 @@ no error checking.  Return nil for dropped dimensions."
   (nth (dimensions object) axis-number))
 
 (defmethod xsize ((object column-major-projection-view))
-  (reduce #'* (dimensions object)))
+  (reduce #'* (dimensions object) :initial-value 1))
 
 (defmethod xref ((object column-major-projection-view) &rest subscripts)
   (with-slots (ancestor dimensions ancestor-dimensions) object

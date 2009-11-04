@@ -69,7 +69,9 @@ vector, list also accepted).  Checks for boundaries and rank."
 	      i quotient)))))
 
 (defun cm-index (dimensions subscripts)
-  "Calculate the column-major flat index from subscripts (list of fixnums) and dimensions (list of fixnums)."
+  "Calculate the column-major flat index from subscripts (list of
+fixnums) and dimensions (list of fixnums).  Works in the corner case
+when dimensions and subscripts are both nil."
   (declare (optimize speed))
   (iter
     (with cumprod := 1)
@@ -83,7 +85,8 @@ vector, list also accepted).  Checks for boundaries and rank."
 (defun cm-subscripts (dimensions i)
   "Return the column-major subscripts (list) for flat index
 i (fixnum), using dimensions (list of fixnums).  No error checking,
-for internal use only."
+for internal use only.  Works in the corner case when dimension is
+nil."
   (declare (optimize speed))
   (check-type i fixnum)
   (iter
@@ -203,7 +206,7 @@ not checked, results are not defined for invalid permutations)."
 (define-modify-macro multf (&rest values) * "Multiply (& set) the first argument by the rest.")
 
 ;;;; 
-;;;;  Utility functions
+;;;;  Misc utility functions
 ;;;;
 
 (defun mklist (obj)
