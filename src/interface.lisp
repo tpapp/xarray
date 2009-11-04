@@ -139,10 +139,11 @@ is conversion (if necessary) with coerce."))
 
 (defgeneric xsimilar (object rank)
   (:documentation "Return (cons class options) for creating a similar
-  object with new rank.  If rank is t, use rank of object.")
-  (:method (object (rank t))
+  object with new rank.  If rank is t, use rank of object.  NOTE: for
+  methods, make sure you specialize rank to fixnum if you are not
+  handling t.")
+  (:method (object (rank (eql t)))
     (xsimilar object (xrank object))))
-
 
 (defgeneric xcreate (class dimensions &optional options)
   (:documentation "Return a new object of given type and dimensions,
