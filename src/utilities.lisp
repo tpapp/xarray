@@ -211,3 +211,30 @@ not checked, results are not defined for invalid permutations)."
 
 (defun mklist (obj)
   (if (listp obj) obj (list obj)))
+
+(defun flat->pairs (list)
+  "Transform a flat list of keyword-option pairs to a list of conses."
+  (iter
+    (for (keyword option) :on list :by #'cddr)
+    (unless option
+      (error "malformed list: contains odd number of elements"))
+    (collecting (cons keyword option))))
+
+(defun pairs->flat (pairs)
+  "Flatten a list of conses."
+  (iter
+    (for (keyword . option) :in pairs)
+    (collecting keyword)
+    (collecting option)))
+
+(defun delete-duplicate-keywords (pairs)
+  "Delete conses with duplicate keywords.  Destructive."
+  (delete-duplicates pairs :test #'eq :key #'car))
+
+(defun merge-options (&rest options-specs)
+  "Merge options specifications.  Duplicate pairs are removed, options
+  that come later (both within and between arguments) are used."
+  (pairs->flat 
+   (delete-duplicate-keywords 
+    (apply #'concatenate 'list (mapcar #'flat->pairs
+  options-specs)))))

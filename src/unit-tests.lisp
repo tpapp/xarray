@@ -134,7 +134,7 @@ Knuth (aka Fisher-Yates) shuffle."
 	       #2A((13 14) (18 19))))
 
 (addtest (xarray)
-  (ensure-same (take* (slice *a* 1 :all))
+  (ensure-same (take t (slice *a* 1 :all))
                #(5 6 7 8 9)))
 
 ;; (addtest (xarray)
@@ -216,5 +216,7 @@ Knuth (aka Fisher-Yates) shuffle."
                    (vector (incf counter) (incf counter))))
      #2A((1 2) (3 4) (5 6) (7 8) (9 10))
      :test #'x=)))
+
+;;; ATOMS -- !!! need some unit testa
 
 ; (run-tests :suite 'xarray)

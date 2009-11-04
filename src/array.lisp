@@ -26,16 +26,13 @@
 
 ;;; Extended interface
 
-(defmethod xtype ((object array))
-  `(array :element-type ,(array-element-type object)))
-
 (defmethod xcreate ((class (eql 'array)) dimensions &optional options)
     (bind (((&key (element-type t)) options))
       (make-array dimensions :element-type element-type)))
 
 (defmethod xsimilar ((object array) rank)
   (declare (ignore rank))
-  (xtype object))
+  `(array :element-type ,(array-element-type object)))
 
 (defmethod take ((class (eql 'array)) object &key force-copy-p options)
   (declare (ignore force-copy-p))

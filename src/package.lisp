@@ -14,10 +14,10 @@
    
    ;; interface
 
-   xelttype xrank xdims xdims* xdim xsize xref-subscript-out-of-bounds
+   xelttype xrank xdims xdim xsize xref-subscript-out-of-bounds
    xref-wrong-number-of-subscripts xref-setting-readonly
    xref-incompatible-type xdim-invalid-axis-number xsetf xref xtype
-   xcreate xsimilar take take*
+   xsimilar xcreate xcreate-similar take
 
    ;; array
 
@@ -32,7 +32,7 @@
 
    ;; operations
    
-   xdim= x+ x- x* x/ x= xorder xsum xprod xmin xmax xmean xmap xmap* xop
+   xdim= x+ x- x* x/ x= xorder xsum xprod xmin xmax xmean xmap xop
    xcollect
 
    ;; sequences

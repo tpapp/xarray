@@ -160,10 +160,11 @@ for early returns, etc.  See code for variable names."
               ((or symbol list)
                  (unless arguments
                    (error "Can't determine target dimensions without arguments."))
-                 (let ((dims (xdims (car arguments)))
-                       (target (mklist target)))
+                 (bind ((first (first arguments))
+                        (dims (xdims first)))
+                        
                    (check-dims dims (cdr arguments))
-                   (xcreate (car target) dims (cdr target))))
+                   (xcreate-similar target first dims)))
               (t (check-dims (xdims target) arguments)
                  target)))
            (flat-arguments (mapcar #'column-major-projection arguments))
@@ -191,16 +192,14 @@ for early returns, etc.  See code for variable names."
                              vectors subscripts)))))
     result))
 
-(defun xcollect (n function &optional target-spec)
+(defun xcollect (n function &optional (target-spec t))
   "Collect the result of calling function n times into an array (type
   of target-spec, or determined using xsimilar).  Indexing is (i ...),
   where i is from 0 to n-1.  The rest of the indexes are determined
   from the first value."
   (let* ((first (funcall function))
          (dims (cons n (xdims first)))
-         (target (xcreate (if target-spec
-                              target-spec
-                              (xsimilar first (length dims))) dims))
+         (target (xcreate-similar target-spec first dims))
          (mask (make-sequence 'list (xrank first) :initial-element :all)))
     ;; first element
     (xsetf (apply #'slice target 0 mask)
