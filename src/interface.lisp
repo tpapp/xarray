@@ -161,13 +161,13 @@ target-spec directly to create an object.  This function is meant for
 internal use, when mapping functions need to determine a target spec
 from one of the arguments."
   (bind ((dimensions (if (eq dimensions t)
-                        (xdims object)
-                        dimensions))
+                         (xdims object)
+                         dimensions))
          ((:values class options) (if (atom target-spec)
                                       (values target-spec nil)
                                       (values (car target-spec) (cdr target-spec)))))
     (xcreate (if (eq class t)
-                 (xsimilar object t)
+                 (xsimilar object (length dimensions))
                  class)
              dimensions (merge-options options more-options))))
 
