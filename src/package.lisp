@@ -32,8 +32,8 @@
 
    ;; operations
    
-   xdim= x+ x- x* x/ x= xorder xsum xprod xmin xmax xmean xmap xop
-   xcollect
+   xdim= x+ x- x* x/ x= xorder xsort xsum xprod xmin xmax xmean xmap
+   xop xcollect
 
    ;; sequences
 

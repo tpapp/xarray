@@ -97,6 +97,13 @@ passed to sort.  If stable-p, stable-sort is used."
                       #'car))
     (map 'fixnum-vector #'cdr work)))
 
+(defun xsort (vector predicate &key key stable-p)
+  "Sort vector using predicate.  Calls xorder and returns order as the
+second value."
+  (let ((order (xorder vector predicate :key key :stable-p stable-p)))
+    (values (take t (slice vector order))
+            order)))
+
 
 ;;; !!! all of these should accept keyword operations -- Tamas
 
