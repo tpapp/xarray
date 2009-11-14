@@ -30,7 +30,7 @@
     (bind (((&key (element-type t)) options))
       (make-array dimensions :element-type element-type)))
 
-(defmethod xsimilar ((object array) rank)
+(defmethod xsimilar (rank (object array))
   (declare (ignore rank))
   `(array :element-type ,(array-element-type object)))
 

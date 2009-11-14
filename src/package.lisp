@@ -25,7 +25,7 @@
 
    ;; view
 
-   view original-ancestor permutation permutation-view slice
+   view original-ancestor permutation permutation-view transpose slice
    slice-view drop column-major-projection
    column-major-projection-view column-major-projection-flat-view flat
    flat-view

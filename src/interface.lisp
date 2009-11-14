@@ -134,16 +134,16 @@ is conversion (if necessary) with coerce."))
 ;;;;
 ;;;;  Dimensions should always be a list.
 ;;;;
-;;;;  XSIMILAR should always give an object which has all its elements
-;;;;  writable, otherwise 
+;;;;  XSIMILAR should always give an object which, when created, has
+;;;;  all its elements writable.
 
-(defgeneric xsimilar (object rank)
+(defgeneric xsimilar (rank object)
   (:documentation "Return (cons class options) for creating a similar
   object with new rank.  If rank is t, use rank of object.  NOTE: for
   methods, make sure you specialize rank to fixnum if you are not
   handling t.")
-  (:method (object (rank (eql t)))
-    (xsimilar object (xrank object))))
+  (:method ((rank (eql t)) object)
+    (xsimilar (xrank object) object)))
 
 (defgeneric xcreate (class dimensions &optional options)
   (:documentation "Return a new object of given type and dimensions,
@@ -167,7 +167,7 @@ from one of the arguments."
                                       (values target-spec nil)
                                       (values (car target-spec) (cdr target-spec)))))
     (xcreate (if (eq class t)
-                 (xsimilar object (length dimensions))
+                 (xsimilar (length dimensions) object)
                  class)
              dimensions (merge-options options more-options))))
 
@@ -190,7 +190,7 @@ type.")
       result))
   (:method ((class (eql t)) object &key force-copy-p options)
     ;; take type from xsimilar
-    (take (xsimilar object t) object :force-copy-p force-copy-p :options options))
+    (take (xsimilar t object) object :force-copy-p force-copy-p :options options))
   (:method ((class list) object &key force-copy-p options)
     ;; split class and merge options
     (take (car class) object :force-copy-p force-copy-p

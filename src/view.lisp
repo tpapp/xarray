@@ -24,8 +24,8 @@
 (defmethod xelttype ((object view))
   (xelttype (ancestor object)))
 
-(defmethod xsimilar ((object view) rank)
-  (xsimilar (ancestor object) rank))
+(defmethod xsimilar (rank (object view))
+  (xsimilar rank (ancestor object)))
 
 (defmethod print-object ((object view) stream)
   (print-unreadable-object (object stream :type t :identity t)
