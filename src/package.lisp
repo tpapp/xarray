@@ -33,12 +33,12 @@
    ;; operations
    
    xdim= x+ x- x* x/ x= xorder xsort xsum xprod xmin xmax xmean xmap
-   xop xcollect
+   xop xcollect xdot
 
    ;; sequences
 
    int-seq
 
-   ;; atoms -- NOTHING NEEDS TO BE EXPORTED
+   ;; atoms -- nothing needs to be exported
    
    ))

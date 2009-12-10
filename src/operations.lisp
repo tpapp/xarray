@@ -218,3 +218,14 @@ for early returns, etc.  See code for variable names."
              (funcall function)))
     ;; value
     target))
+
+(defgeneric xdot (a b)
+  (:documentation "Dot product of two vectors.")
+  (:method (a b)
+    (bind (((n1) (xdims a))
+           ((n2) (xdims b)))
+      (assert (= n1 n2) 
+              () "Incompatible vector lengths.")
+      (iter
+        (for i :from 0 :below n1)
+        (summing (* (xref a i) (xref b i)))))))
