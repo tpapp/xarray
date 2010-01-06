@@ -99,11 +99,11 @@ returns objects which are not views."
 ;;;; !!! maybe I should write transpose as a special case of
 ;;;; !!! permutation.  Could make it much faster.  Do it when needed.
 
-(defgeneric transpose (object)
-  (:documentation "Tranposed view.")
-  (:method (object)
-    (assert (= (xrank object) 2))
-    (permutation object 1 0)))
+;; (defgeneric transpose (object)
+;;   (:documentation "Tranposed view.")
+;;   (:method (object)
+;;     (assert (= (xrank object) 2))
+;;     (permutation object 1 0)))
 
 ;;;; slices
 ;;;;
