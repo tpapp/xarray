@@ -34,8 +34,8 @@
   (declare (ignore rank))
   `(array :element-type ,(array-element-type object)))
 
-(defmethod take ((class (eql 'array)) object &key force-copy-p options)
-  (declare (ignore force-copy-p))
+(defmethod as* ((class (eql 'array)) object copy-p options)
+  (declare (ignore copy-p))
   (bind (((&key (element-type t)) options)
          (array (make-array (xdims object) :element-type element-type))
          (dimensions (coerce (xdims object) 'fixnum-vector)))

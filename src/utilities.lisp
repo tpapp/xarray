@@ -1,8 +1,8 @@
 (in-package :xarray)
 
-(declaim (inline within-dimension-p vector-within-dimension-p))
-
 ;; functions to check for validity of subscripts and indexes
+
+(declaim (inline within-dimension-p vector-within-dimension-p))
 
 (defun within-dimension-p (subscript dimension)
   "Check if 0 <= subscript < dimension."

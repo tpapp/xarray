@@ -43,4 +43,4 @@
      (:file "operations")
      (:file "sequences")
      (:file "atoms"))))
-  :depends-on (:cl-utilities :iterate :metabang-bind))
+  :depends-on (:cl-utilities :iterate :metabang-bind :anaphora))

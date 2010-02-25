@@ -101,7 +101,7 @@ passed to sort.  If stable-p, stable-sort is used."
   "Sort vector using predicate.  Calls xorder and returns order as the
 second value."
   (let ((order (xorder vector predicate :key key :stable-p stable-p)))
-    (values (take t (slice vector order))
+    (values (as t (slice vector order))
             order)))
 
 
@@ -169,7 +169,6 @@ for early returns, etc.  See code for variable names."
                    (error "Can't determine target dimensions without arguments."))
                  (bind ((first (first arguments))
                         (dims (xdims first)))
-                        
                    (check-dims dims (cdr arguments))
                    (xcreate-similar target first dims)))
               (t (check-dims (xdims target) arguments)

@@ -1,7 +1,7 @@
 (in-package #:xarray-asd)
 
 (defpackage #:xarray
-  (:use :common-lisp :iterate :bind :cl-utilities)
+  (:use :common-lisp :iterate :bind :cl-utilities :anaphora)
   (:shadowing-import-from :iterate :collecting :collect)
   (:export
 
@@ -17,7 +17,7 @@
    xelttype xrank xdims xdim xsize xref-subscript-out-of-bounds
    xref-wrong-number-of-subscripts xref-setting-readonly
    xref-incompatible-type xdim-invalid-axis-number xsetf xref xtype
-   xsimilar xcreate xcreate-similar take
+   xsimilar xcreate xcreate-similar as* as copy-as
 
    ;; array
 
