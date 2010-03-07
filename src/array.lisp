@@ -51,6 +51,12 @@
                 (apply #'xref object (rm-subscripts dimensions i)))))
     array))
 
+;;;  1-dimensional arrays can also be referred to as vector.
+
+(defmethod as* ((class (eql 'vector)) object copy-p options)
+  (assert (= (xrank object) 1) () "OBJECT is not a vector.")
+  (as* 'array object copy-p options))
+
 ;;;;  Convenience functions for vector and array construction.  All
 ;;;;  return simple-arrays of the specified type, the versions with *
 ;;;;  use numeric-type-classifier.
