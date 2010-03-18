@@ -33,7 +33,7 @@
    ;; operations
    
    xdim= x+ x- x* x/ x= xorder xsort xsum xprod xmin xmax xmean xmap
-   xop xcollect xdot
+   xop xcollect xdot xconcat
 
    ;; sequences
 

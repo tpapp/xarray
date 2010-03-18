@@ -22,4 +22,4 @@
     
 (defmethod xsimilar (rank object)
   (declare (ignore rank))
-  `(array :element-type ,(upgraded-array-element-type (type-of object))))
+  `(array :element-type t))

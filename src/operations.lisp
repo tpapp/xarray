@@ -228,3 +228,29 @@ for early returns, etc.  See code for variable names."
       (iter
         (for i :from 0 :below n1)
         (summing (* (xref a i) (xref b i)))))))
+
+(defun xconcat (target-type &rest arguments)
+  "Concatenate atoms and/or vectors into a vector."
+  (let* ((length (reduce #'+ arguments
+                        :key (lambda (arg)
+                               (acase (xrank arg)
+                                 (0 1)
+                                 (1 (xdim arg 0))
+                                 (otherwise (error "Argument ~A has rank ~A" arg it))))))
+         (result (xcreate-similar target-type (first arguments) (list length)))
+         (position 0))
+    (dolist (arg arguments)
+      (ecase (xrank arg)
+        (0 (setf (xref result position) arg)
+           (incf position))
+        (1 (iter
+             (with arg-length :=  (xdim arg 0))
+             (for arg-index :from 0 :below arg-length)
+             (for result-index :from position)
+             (setf (xref result result-index) (xref arg arg-index))
+             (finally (incf position arg-length))))))
+    result))
+
+;; (xconcat t #(1 2 3) 4 5 6)
+;; (xconcat t 1 #(2 3) 4 #(4 5))
+;; (xconcat t 1 #(2 3) #2A((4 5)))
